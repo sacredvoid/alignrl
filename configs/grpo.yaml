@@ -1,0 +1,12 @@
+model_name: "Qwen/Qwen2.5-3B"
+output_dir: "./outputs/grpo"
+max_seq_length: 2048
+per_device_train_batch_size: 4
+gradient_accumulation_steps: 1
+learning_rate: 5e-6
+max_steps: 250
+optim: "adamw_8bit"
+lora_r: 16
+lora_alpha: 32
+load_in_4bit: true
+report_to: "wandb"
