@@ -1,4 +1,5 @@
 """Configuration system using Pydantic for validation."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -36,7 +37,7 @@ class BaseTrainConfig(BaseModel):
     load_in_4bit: bool = True
 
     @classmethod
-    def from_yaml(cls, path: Path) -> "BaseTrainConfig":
+    def from_yaml(cls, path: Path) -> BaseTrainConfig:
         with open(path) as f:
             data = yaml.safe_load(f)
         return cls(**data)

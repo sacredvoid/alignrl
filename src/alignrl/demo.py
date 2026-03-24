@@ -1,4 +1,5 @@
 """Gradio demo for comparing model stages."""
+
 from __future__ import annotations
 
 from alignrl.inference import InferenceConfig, ModelServer, build_prompt

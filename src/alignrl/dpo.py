@@ -1,4 +1,5 @@
 """Direct Preference Optimization (DPO) for alignment."""
+
 from __future__ import annotations
 
 import json
@@ -65,7 +66,8 @@ class DPORunner:
         return ds.map(format_ultrafeedback)
 
     def train(self) -> TrainResult:
-        from trl import DPOConfig as TRLDPOConfig, DPOTrainer
+        from trl import DPOConfig as TRLDPOConfig
+        from trl import DPOTrainer
 
         self._load_model()
         dataset = self._load_dataset()
@@ -102,9 +104,7 @@ class DPORunner:
         result = trainer.train()
         trainer.save_model(str(output_dir / "final"))
 
-        loss_history = [
-            log["loss"] for log in trainer.state.log_history if "loss" in log
-        ]
+        loss_history = [log["loss"] for log in trainer.state.log_history if "loss" in log]
 
         train_result = TrainResult(
             output_dir=output_dir / "final",

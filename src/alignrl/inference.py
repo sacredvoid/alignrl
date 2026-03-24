@@ -1,7 +1,6 @@
 """Inference utilities for serving trained models."""
-from __future__ import annotations
 
-from pathlib import Path
+from __future__ import annotations
 
 from pydantic import BaseModel
 
@@ -17,9 +16,7 @@ class InferenceConfig(BaseModel):
     backend: str = "unsloth"  # "unsloth", "vllm", or "mlx"
 
 
-def build_prompt(
-    user_message: str, system: str | None = None
-) -> list[dict[str, str]]:
+def build_prompt(user_message: str, system: str | None = None) -> list[dict[str, str]]:
     """Build a chat prompt."""
     messages = []
     if system:
@@ -87,7 +84,7 @@ class ModelServer:
             top_p=self.config.top_p,
             do_sample=self.config.temperature > 0,
         )
-        return self._tokenizer.decode(outputs[0][inputs.shape[-1]:], skip_special_tokens=True)
+        return self._tokenizer.decode(outputs[0][inputs.shape[-1] :], skip_special_tokens=True)
 
     def _generate_vllm(self, messages: list[dict[str, str]]) -> str:
         from vllm import SamplingParams
@@ -107,6 +104,9 @@ class ModelServer:
             messages, tokenize=False, add_generation_prompt=True
         )
         return generate(
-            self._model, self._tokenizer, prompt=prompt,
-            max_tokens=self.config.max_tokens, temp=self.config.temperature,
+            self._model,
+            self._tokenizer,
+            prompt=prompt,
+            max_tokens=self.config.max_tokens,
+            temp=self.config.temperature,
         )

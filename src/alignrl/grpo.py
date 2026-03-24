@@ -1,13 +1,17 @@
 """GRPO (Group Relative Policy Optimization) with verifiable rewards."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 from alignrl.config import BaseTrainConfig
 from alignrl.rewards import format_reward, math_verify_reward
 from alignrl.types import TrainResult
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 SYSTEM_PROMPT = (
     "You are a helpful math assistant. Solve problems step by step, "
@@ -88,7 +92,8 @@ class GRPORunner:
         return ds.map(_format_gsm8k_prompt, remove_columns=ds.column_names)
 
     def train(self) -> TrainResult:
-        from trl import GRPOConfig as TRLGRPOConfig, GRPOTrainer
+        from trl import GRPOConfig as TRLGRPOConfig
+        from trl import GRPOTrainer
 
         self._load_model()
         dataset = self._load_dataset()
@@ -128,9 +133,7 @@ class GRPORunner:
         result = trainer.train()
         trainer.save_model(str(output_dir / "final"))
 
-        loss_history = [
-            log["loss"] for log in trainer.state.log_history if "loss" in log
-        ]
+        loss_history = [log["loss"] for log in trainer.state.log_history if "loss" in log]
         reward_history = [
             log.get("reward", 0.0) for log in trainer.state.log_history if "reward" in log
         ]

@@ -1,8 +1,9 @@
 """Tests for evaluation module."""
+
 import json
 from pathlib import Path
 
-from alignrl.eval import EvalConfig, parse_results, compare_stages
+from alignrl.eval import EvalConfig, compare_stages, parse_results
 from alignrl.types import EvalResult
 
 
@@ -54,7 +55,8 @@ class TestCompareStages:
 
     def test_serializes_to_json(self, tmp_path: Path) -> None:
         base = EvalResult(
-            model_name="qwen", stage="base",
+            model_name="qwen",
+            stage="base",
             benchmarks={"gsm8k": {"exact_match": 0.30}},
         )
         comparison = compare_stages([base])

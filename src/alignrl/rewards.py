@@ -1,4 +1,5 @@
 """Reward functions for GRPO training with verifiable rewards."""
+
 from __future__ import annotations
 
 import re
@@ -83,7 +84,7 @@ def math_verify_reward(
     Compatible with TRL GRPOTrainer reward_funcs signature.
     """
     rewards: list[float] = []
-    for completion, sol in zip(completions, solution):
+    for completion, sol in zip(completions, solution, strict=False):
         content = completion[0]["content"] if completion else ""
         predicted = extract_answer(content)
         if predicted and _answers_match(predicted, sol):

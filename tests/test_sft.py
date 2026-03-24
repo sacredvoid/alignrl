@@ -1,9 +1,9 @@
 """Tests for SFT module."""
+
 from pathlib import Path
 
 import pytest
 
-from alignrl.config import BaseTrainConfig
 from alignrl.sft import SFTConfig, format_instruction
 
 
