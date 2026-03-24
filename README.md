@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-33%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-49%20passed-brightgreen)]()
 
 **From base model to deployed reasoning agent** - every LLM post-training technique, implemented and benchmarked.
 
@@ -50,11 +50,11 @@ Each notebook is self-contained and runs end-to-end on a free Colab T4 GPU.
 
 | # | Notebook | Technique | Colab |
 |---|----------|-----------|-------|
-| 01 | SFT on OpenHermes-2.5 | Supervised Fine-Tuning with QLoRA | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/01_sft.ipynb) |
-| 02 | GRPO on GSM8K | RL with Verifiable Math Rewards | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/02_grpo.ipynb) |
-| 03 | DPO on UltraFeedback | Direct Preference Optimization | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/03_dpo.ipynb) |
-| 04 | Benchmark Evaluation | lm-evaluation-harness across stages | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/04_eval.ipynb) |
-| 05 | Inference Comparison | Side-by-side Gradio demo | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/05_inference.ipynb) |
+| 01 | SFT on OpenHermes-2.5 | Supervised Fine-Tuning with QLoRA | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/01_sft_instruction_tuning.ipynb) |
+| 02 | GRPO on GSM8K | RL with Verifiable Math Rewards | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/02_grpo_math_reasoning.ipynb) |
+| 03 | DPO on UltraFeedback | Direct Preference Optimization | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/03_dpo_preference_alignment.ipynb) |
+| 04 | Benchmark Evaluation | lm-evaluation-harness across stages | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/04_evaluation_benchmarks.ipynb) |
+| 05 | Inference Comparison | Side-by-side Gradio demo | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/05_inference_serving.ipynb) |
 
 ## Benchmark Results
 
@@ -105,7 +105,7 @@ alignrl/
   notebooks/        # Colab-ready Jupyter notebooks
   results/          # Benchmark JSON (consumed by dashboard)
   src/alignrl/      # Package source
-  tests/            # 33 unit tests (pytest)
+  tests/            # 49 unit tests (pytest)
   pyproject.toml    # Hatchling build, optional dependency groups
 ```
 
