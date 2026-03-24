@@ -16,7 +16,7 @@ async function loadBenchmarks() {
 
   let data;
   try {
-    const resp = await fetch("../results/comparison.json");
+    const resp = await fetch("comparison.json");
     data = await resp.json();
   } catch {
     tbody.innerHTML =

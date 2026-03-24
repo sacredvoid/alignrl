@@ -1,4 +1,5 @@
 """Tests for inference module."""
+
 from alignrl.inference import InferenceConfig, build_prompt
 
 

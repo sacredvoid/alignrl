@@ -1,7 +1,6 @@
 """Tests for reward functions."""
-import pytest
 
-from alignrl.rewards import extract_answer, math_verify_reward, format_reward
+from alignrl.rewards import extract_answer, format_reward, math_verify_reward
 
 
 class TestExtractAnswer:

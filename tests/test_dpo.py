@@ -1,4 +1,5 @@
 """Tests for DPO module."""
+
 from alignrl.dpo import DPOConfig, format_ultrafeedback
 
 

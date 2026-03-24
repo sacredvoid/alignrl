@@ -1,4 +1,5 @@
 """Supervised Fine-Tuning with QLoRA via Unsloth + TRL."""
+
 from __future__ import annotations
 
 import json
@@ -74,7 +75,8 @@ class SFTRunner:
         return ds.map(_apply_template, remove_columns=ds.column_names)
 
     def train(self) -> TrainResult:
-        from trl import SFTConfig as TRLSFTConfig, SFTTrainer
+        from trl import SFTConfig as TRLSFTConfig
+        from trl import SFTTrainer
 
         self._load_model()
         dataset = self._load_dataset()
@@ -109,9 +111,7 @@ class SFTRunner:
         result = trainer.train()
         trainer.save_model(str(output_dir / "final"))
 
-        loss_history = [
-            log["loss"] for log in trainer.state.log_history if "loss" in log
-        ]
+        loss_history = [log["loss"] for log in trainer.state.log_history if "loss" in log]
 
         train_result = TrainResult(
             output_dir=output_dir / "final",
@@ -122,9 +122,7 @@ class SFTRunner:
         )
 
         with open(output_dir / "train_result.json", "w") as f:
-            json.dump(
-                {"loss_history": loss_history, "metrics": train_result.metrics}, f, indent=2
-            )
+            json.dump({"loss_history": loss_history, "metrics": train_result.metrics}, f, indent=2)
 
         return train_result
 

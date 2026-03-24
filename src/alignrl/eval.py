@@ -1,14 +1,17 @@
 """Evaluation harness wrapper for benchmarking across training stages."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import Field
 
 from alignrl.config import BaseTrainConfig
 from alignrl.types import EvalResult
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class EvalConfig(BaseTrainConfig):
@@ -25,9 +28,7 @@ def parse_results(raw: dict[str, Any], model_name: str, stage: str) -> EvalResul
     """Parse lm-evaluation-harness output into EvalResult."""
     benchmarks: dict[str, dict[str, float]] = {}
     for task_name, metrics in raw.get("results", {}).items():
-        benchmarks[task_name] = {
-            k: v for k, v in metrics.items() if isinstance(v, (int, float))
-        }
+        benchmarks[task_name] = {k: v for k, v in metrics.items() if isinstance(v, (int, float))}
     return EvalResult(model_name=model_name, stage=stage, benchmarks=benchmarks)
 
 
@@ -72,9 +73,7 @@ class EvalRunner:
 
         return parse_results(raw, model_name=self.config.model_name, stage=stage)
 
-    def evaluate_all_stages(
-        self, adapter_paths: dict[str, str | None]
-    ) -> list[EvalResult]:
+    def evaluate_all_stages(self, adapter_paths: dict[str, str | None]) -> list[EvalResult]:
         """Evaluate multiple stages and return comparison-ready results."""
         results = []
         for stage, adapter_path in adapter_paths.items():

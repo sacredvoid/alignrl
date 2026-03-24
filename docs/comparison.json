@@ -1,0 +1,20 @@
+{
+  "gsm8k": {
+    "base": {"exact_match": 0.31},
+    "sft": {"exact_match": 0.45},
+    "grpo": {"exact_match": 0.62},
+    "dpo": {"exact_match": 0.43}
+  },
+  "arc_challenge": {
+    "base": {"acc_norm": 0.48},
+    "sft": {"acc_norm": 0.54},
+    "grpo": {"acc_norm": 0.52},
+    "dpo": {"acc_norm": 0.55}
+  },
+  "math": {
+    "base": {"exact_match": 0.12},
+    "sft": {"exact_match": 0.18},
+    "grpo": {"exact_match": 0.29},
+    "dpo": {"exact_match": 0.17}
+  }
+}

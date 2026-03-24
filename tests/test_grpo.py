@@ -1,4 +1,5 @@
 """Tests for GRPO module."""
+
 from alignrl.grpo import GRPOConfig
 
 
