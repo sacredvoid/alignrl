@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>alignrl - LLM Post-Training Playbook</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>alignrl</h1>
+      <p class="tagline">From base model to deployed reasoning agent</p>
+      <div class="links">
+        <a href="https://github.com/sacredvoid/alignrl" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#benchmarks" class="btn-secondary">View Results</a>
+        <a href="#notebooks" class="btn-secondary">Colab Notebooks</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pipeline -->
+  <section id="pipeline">
+    <div class="container">
+      <h2><span class="section-icon">&#9654;</span> Training Pipeline</h2>
+      <div class="pipeline-flow">
+        <div class="pipeline-node base">
+          <div class="node-label">Base</div>
+          <div class="node-desc">Qwen2.5-3B<br>Pre-trained</div>
+        </div>
+        <div class="pipeline-arrow">&rarr;</div>
+        <div class="pipeline-node sft">
+          <div class="node-label">SFT</div>
+          <div class="node-desc">Supervised<br>Fine-Tuning</div>
+        </div>
+        <div class="pipeline-arrow">&rarr;</div>
+        <div class="pipeline-branch">
+          <div class="pipeline-node grpo">
+            <div class="node-label">GRPO</div>
+            <div class="node-desc">Verifiable<br>Rewards</div>
+          </div>
+          <div class="pipeline-branch-label">or</div>
+          <div class="pipeline-node dpo">
+            <div class="node-label">DPO</div>
+            <div class="node-desc">Preference<br>Alignment</div>
+          </div>
+        </div>
+        <div class="pipeline-arrow">&rarr;</div>
+        <div class="pipeline-node eval">
+          <div class="node-label">Eval</div>
+          <div class="node-desc">GSM8K, ARC<br>MATH</div>
+        </div>
+        <div class="pipeline-arrow">&rarr;</div>
+        <div class="pipeline-node serve">
+          <div class="node-label">Serve</div>
+          <div class="node-desc">Gradio<br>Demo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benchmarks -->
+  <section id="benchmarks">
+    <div class="container">
+      <h2><span class="section-icon">&#9733;</span> Benchmark Results</h2>
+      <div class="bench-table-wrapper">
+        <table class="bench-table" id="results-table">
+          <thead>
+            <tr>
+              <th>Benchmark</th>
+              <th class="col-base">Base</th>
+              <th class="col-sft">SFT</th>
+              <th class="col-grpo">GRPO</th>
+              <th class="col-dpo">DPO</th>
+            </tr>
+          </thead>
+          <tbody id="results-body">
+            <!-- Populated by dashboard.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Training Curves -->
+  <section id="curves">
+    <div class="container">
+      <h2><span class="section-icon">&#8593;</span> Training Curves</h2>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Training Loss (SFT + GRPO)</h3>
+          <canvas id="loss-chart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>GRPO Reward Over Time</h3>
+          <canvas id="reward-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reasoning Examples -->
+  <section id="examples">
+    <div class="container">
+      <h2><span class="section-icon">&#128161;</span> Reasoning Comparison</h2>
+      <div class="example-prompt">
+        <div class="label">Prompt</div>
+        Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
+      </div>
+      <div class="examples-grid">
+        <div class="example-card">
+          <span class="stage-badge base">Base</span>
+          <div class="response">Natalia sold 48 clips in April and half that in May, which is 48/2 = 24 clips.
+
+So she sold 48 + 24 = 72 clips total.
+
+The answer is 72.</div>
+        </div>
+        <div class="example-card">
+          <span class="stage-badge sft">SFT</span>
+          <div class="response">Let me solve this step by step.
+
+Step 1: Clips sold in April = 48
+Step 2: Clips sold in May = 48 / 2 = 24
+Step 3: Total clips = 48 + 24 = 72
+
+Therefore, Natalia sold <span class="boxed">\boxed{72}</span> clips altogether.</div>
+        </div>
+        <div class="example-card">
+          <span class="stage-badge grpo">GRPO</span>
+          <div class="response">I need to find the total clips sold across April and May.
+
+April sales: 48 clips
+May sales: "half as many" as April
+  = 48 / 2
+  = 24 clips
+
+Total = April + May
+     = 48 + 24
+     = 72
+
+Let me verify: 48 is double 24 (correct), and 48 + 24 = 72 (correct).
+
+<span class="boxed">\boxed{72}</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notebooks -->
+  <section id="notebooks">
+    <div class="container">
+      <h2><span class="section-icon">&#128214;</span> Colab Notebooks</h2>
+      <div class="notebooks-grid">
+
+        <div class="notebook-card">
+          <h3>01 - Supervised Fine-Tuning</h3>
+          <p>QLoRA fine-tuning with Unsloth on OpenHermes-2.5. Learn chat template formatting and 4-bit training.</p>
+          <div class="badge-row">
+            <a href="https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/01_sft.ipynb" target="_blank">
+              <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+            </a>
+          </div>
+        </div>
+
+        <div class="notebook-card">
+          <h3>02 - GRPO Training</h3>
+          <p>Group Relative Policy Optimization with math-verify rewards on GSM8K. Verifiable RL for reasoning.</p>
+          <div class="badge-row">
+            <a href="https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/02_grpo.ipynb" target="_blank">
+              <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+            </a>
+          </div>
+        </div>
+
+        <div class="notebook-card">
+          <h3>03 - DPO Alignment</h3>
+          <p>Direct Preference Optimization on UltraFeedback. Align models to human preference without reward models.</p>
+          <div class="badge-row">
+            <a href="https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/03_dpo.ipynb" target="_blank">
+              <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+            </a>
+          </div>
+        </div>
+
+        <div class="notebook-card">
+          <h3>04 - Evaluation</h3>
+          <p>Benchmark all stages on GSM8K, ARC-Challenge, and MATH using lm-evaluation-harness.</p>
+          <div class="badge-row">
+            <a href="https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/04_eval.ipynb" target="_blank">
+              <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+            </a>
+          </div>
+        </div>
+
+        <div class="notebook-card">
+          <h3>05 - Inference & Demo</h3>
+          <p>Run inference with vLLM/MLX and launch the Gradio comparison demo. Includes side-by-side outputs.</p>
+          <div class="badge-row">
+            <a href="https://colab.research.google.com/github/sacredvoid/alignrl/blob/main/notebooks/05_inference.ipynb" target="_blank">
+              <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab">
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      Built with alignrl - MIT License
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
