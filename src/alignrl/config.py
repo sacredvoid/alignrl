@@ -41,3 +41,19 @@ class BaseTrainConfig(BaseModel):
         with open(path) as f:
             data = yaml.safe_load(f)
         return cls(**data)
+
+
+# ChatML template used as fallback when the tokenizer doesn't have one set.
+# This is the standard format for Qwen, Yi, and many other models.
+CHATML_TEMPLATE = (
+    "{% for message in messages %}"
+    "{{'<|im_start|>' + message['role'] + '\n' + message['content'] + '<|im_end|>' + '\n'}}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}{{'<|im_start|>assistant\n'}}{% endif %}"
+)
+
+
+def ensure_chat_template(tokenizer) -> None:
+    """Set a chatml chat template on the tokenizer if one isn't already set."""
+    if getattr(tokenizer, "chat_template", None) is None:
+        tokenizer.chat_template = CHATML_TEMPLATE

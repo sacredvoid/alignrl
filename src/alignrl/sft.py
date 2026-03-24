@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from alignrl.config import BaseTrainConfig
+from alignrl.config import BaseTrainConfig, ensure_chat_template
 from alignrl.types import TrainResult
 
 ROLE_MAP = {"human": "user", "gpt": "assistant", "system": "system"}
@@ -49,6 +49,7 @@ class SFTRunner:
             load_in_4bit=self.config.load_in_4bit,
             dtype=None,
         )
+        ensure_chat_template(self._tokenizer)
         self._model = FastLanguageModel.get_peft_model(
             self._model,
             r=self.config.lora_r,

@@ -50,6 +50,9 @@ class ModelServer:
             max_seq_length=2048,
             load_in_4bit=True,
         )
+        from alignrl.config import ensure_chat_template
+
+        ensure_chat_template(self._tokenizer)
         FastLanguageModel.for_inference(self._model)
 
     def _load_vllm(self) -> None:
