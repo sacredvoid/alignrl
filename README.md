@@ -1,5 +1,6 @@
 # alignrl
 
+[![PyPI](https://img.shields.io/pypi/v/alignrl)](https://pypi.org/project/alignrl/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-49%20passed-brightgreen)]()
