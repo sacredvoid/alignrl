@@ -64,7 +64,22 @@ class TestFormatReward:
     def test_correct_format(self) -> None:
         completions = [[{"content": "Let me think step by step.\n\n\\boxed{42}"}]]
         rewards = format_reward(completions)
-        assert rewards[0] > 0
+        assert rewards[0] == 1.0
+
+    def test_boxed_at_end_scores_full(self) -> None:
+        completions = [[{"content": "Step 1.\n\\boxed{42}"}]]
+        rewards = format_reward(completions)
+        assert rewards[0] == 1.0
+
+    def test_boxed_with_nested_braces_at_end(self) -> None:
+        completions = [[{"content": "So \\boxed{\\frac{1}{2}}"}]]
+        rewards = format_reward(completions)
+        assert rewards[0] == 1.0
+
+    def test_unmatched_boxed_scores_zero(self) -> None:
+        completions = [[{"content": "\\boxed{42"}]]
+        rewards = format_reward(completions)
+        assert rewards[0] == 0.0
 
     def test_no_boxed(self) -> None:
         completions = [[{"content": "The answer is 42"}]]
