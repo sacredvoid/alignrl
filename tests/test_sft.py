@@ -138,7 +138,7 @@ class TestSFTRunner:
         mock_datasets.load_dataset.return_value = mock_ds
 
         with patch.dict("sys.modules", {"datasets": mock_datasets}):
-            result = runner._load_dataset()
+            runner._load_dataset()
             mock_datasets.load_dataset.assert_called_once()
             mock_ds.select.assert_called_once()
 

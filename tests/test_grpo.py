@@ -105,7 +105,7 @@ class TestGRPORunner:
         mock_datasets.load_dataset.return_value = mock_ds
 
         with patch.dict("sys.modules", {"datasets": mock_datasets}):
-            result = runner._load_dataset()
+            runner._load_dataset()
             mock_datasets.load_dataset.assert_called_once_with(
                 cfg.dataset_name, cfg.dataset_config, split=cfg.dataset_split
             )

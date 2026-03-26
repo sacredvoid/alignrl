@@ -109,7 +109,9 @@ def main() -> None:
     eval_p.add_argument("--model", default="Qwen/Qwen2.5-3B")
     eval_p.add_argument("--adapter", default=None, help="Path to LoRA adapter")
     eval_p.add_argument("--stage", default="base", help="Stage label (base/sft/grpo/dpo)")
-    eval_p.add_argument("--tasks", default=None, help="Comma-separated task list (overrides preset)")
+    eval_p.add_argument(
+        "--tasks", default=None, help="Comma-separated task list (overrides preset)"
+    )
     eval_p.add_argument(
         "--preset",
         default=None,

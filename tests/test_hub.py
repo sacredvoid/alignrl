@@ -91,7 +91,7 @@ class TestRunnerPushToHub:
         runner = DPORunner(cfg)
 
         with patch("alignrl.hub.push_adapter", return_value="https://huggingface.co/u/m") as mock:
-            url = runner.push_to_hub("u/m")
+            runner.push_to_hub("u/m")
             mock.assert_called_once()
 
     def test_grpo_push_adapter(self) -> None:
@@ -101,5 +101,5 @@ class TestRunnerPushToHub:
         runner = GRPORunner(cfg)
 
         with patch("alignrl.hub.push_adapter", return_value="https://huggingface.co/u/m") as mock:
-            url = runner.push_to_hub("u/m")
+            runner.push_to_hub("u/m")
             mock.assert_called_once()

@@ -16,7 +16,7 @@ class TestCreateDemo:
         mock_server.generate.return_value = "test output"
 
         with patch.dict("sys.modules", {"gradio": mock_gr}), \
-             patch("alignrl.demo.ModelServer", return_value=mock_server) as mock_ms, \
+             patch("alignrl.demo.ModelServer", return_value=mock_server), \
              patch("alignrl.demo.InferenceConfig"):
             mock_server.load = MagicMock()
             app = create_demo(stages={"base": None}, model_name="test-model")

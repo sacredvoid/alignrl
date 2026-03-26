@@ -252,6 +252,6 @@ class TestModelServer:
         server._model.generate.return_value = MagicMock()
         server._tokenizer.decode.return_value = "deterministic"
 
-        result = server._generate_unsloth([{"role": "user", "content": "hi"}])
+        server._generate_unsloth([{"role": "user", "content": "hi"}])
         call_kwargs = server._model.generate.call_args[1]
         assert call_kwargs["do_sample"] is False

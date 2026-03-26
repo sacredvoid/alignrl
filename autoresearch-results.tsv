@@ -1,0 +1,18 @@
+# metric_direction: higher_is_better
+iteration	commit	metric	delta	guard	status	description
+0	97c61a0	54	0.0	pass	baseline	initial state — coverage 54%
+1	3663cbf	56	+2.0	pass	keep	add tests for _format_gsm8k_prompt and GRPORunner save/init branches
+2	bc6f2da	56	+0.4	pass	keep	add tests for ensure_chat_template — config.py now 100%
+3	4efbb5c	58	+2.0	pass	keep	add SFTRunner/DPORunner save/init and config branch tests
+4	-	58	0.0	-	discard	CLI tests failed — patched wrong import paths for lazy imports
+5	55c676a	66	+8.0	pass	keep	add CLI tests with correct source-module patching — cli.py 49%->99%
+6	6b52cc2	70	+4.0	pass	keep	add EvalRunner save_results, evaluate_all_stages, evaluate tests — eval.py 57%->85%
+7	2e6ebd1	75	+5.0	pass	keep	add ModelServer dispatch/load/generate tests — inference.py 40%->85%, eval.py->100%
+8	a9538e3	79	+4.0	pass	keep	add demo.py tests with mocked gradio — demo.py 0%->84%
+9	5f5deb5	80	+1.0	pass	keep	add rewards edge case tests — rewards.py 95%->100%
+10	fdd7191	86	+6.0	pass	keep	add mocked SFTRunner train/load/save tests — sft.py 48%->95%
+11	7739774	91	+5.0	pass	keep	add mocked DPORunner tests — dpo.py 50%->100%
+12	da80fa5	97	+6.0	pass	keep	add mocked GRPORunner tests — grpo.py 54%->100%, TOTAL 97%
+13	f172b24	98	+1.0	pass	keep	add _load_unsloth/_generate_unsloth tests — inference.py 85%->100%
+14	df08faf	99	+1.0	pass	keep	cover inner functions — sft.py->100%, demo.py 84%->94%, TOTAL 99%
+15	f7dd8f0	99	+0.2	pass	keep	cover cli.py __main__ via runpy — cli.py->100%

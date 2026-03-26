@@ -126,15 +126,15 @@ class TestCmdEval:
 class TestMainEntry:
     def test_main_module_execution(self) -> None:
         """Test if __name__ == '__main__' block in cli.py."""
-        with patch("alignrl.cli.main") as mock_main, \
-             patch("alignrl.cli.__name__", "__main__"):
-            # Simulate running as __main__
-            import runpy
+        import contextlib
+        import runpy
 
-            try:
-                runpy.run_module("alignrl.cli", run_name="__main__", alter_sys=True)
-            except SystemExit:
-                pass  # main() will exit without args
+        with (
+            patch("alignrl.cli.main"),
+            patch("alignrl.cli.__name__", "__main__"),
+            contextlib.suppress(SystemExit),
+        ):
+            runpy.run_module("alignrl.cli", run_name="__main__", alter_sys=True)
 
 
 class TestCmdServe:

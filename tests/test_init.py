@@ -22,21 +22,25 @@ class TestPublicAPI:
         from alignrl import DPOConfig, DPORunner
 
         assert DPOConfig is not None
+        assert DPORunner is not None
 
     def test_lazy_import_grpo(self) -> None:
         from alignrl import GRPOConfig, GRPORunner
 
         assert GRPOConfig is not None
+        assert GRPORunner is not None
 
     def test_lazy_import_eval(self) -> None:
         from alignrl import EvalConfig, EvalRunner
 
         assert EvalConfig is not None
+        assert EvalRunner is not None
 
     def test_lazy_import_inference(self) -> None:
         from alignrl import InferenceConfig, ModelServer, build_prompt
 
         assert InferenceConfig is not None
+        assert ModelServer is not None
         assert build_prompt is not None
 
     def test_lazy_import_types(self) -> None:
