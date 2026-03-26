@@ -48,9 +48,9 @@ class EvalConfig(BaseTrainConfig):
                 raise ValueError(
                     f"Unknown preset {self.preset!r}. Available: {', '.join(BENCHMARK_PRESETS)}"
                 )
-            self.tasks = BENCHMARK_PRESETS[self.preset]
+            self.tasks = list(BENCHMARK_PRESETS[self.preset])
         else:
-            self.tasks = BENCHMARK_PRESETS["core"]
+            self.tasks = list(BENCHMARK_PRESETS["core"])
         return self
 
 

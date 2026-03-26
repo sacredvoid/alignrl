@@ -47,6 +47,12 @@ class TestEvalConfig:
         with pytest.raises(ValueError, match="Unknown preset"):
             EvalConfig(preset="nonexistent")
 
+    def test_preset_tasks_not_aliased_to_shared_dict(self) -> None:
+        cfg = EvalConfig(preset="reasoning")
+        original = list(BENCHMARK_PRESETS["reasoning"])
+        cfg.tasks.append("should_not_leak")
+        assert BENCHMARK_PRESETS["reasoning"] == original
+
 
 class TestParseResults:
     def test_parses_lm_eval_output(self) -> None:
