@@ -120,7 +120,7 @@ class GRPORunner:
             save_strategy="steps",
             save_steps=50,
         )
-        if self.config.reward_weights:
+        if self.config.reward_weights is not None:
             grpo_args.reward_weights = self.config.reward_weights
 
         trainer = GRPOTrainer(
