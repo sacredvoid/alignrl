@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -15,7 +15,7 @@ class TrainResult:
 
     output_dir: Path
     loss_history: list[float]
-    metrics: dict[str, float]
+    metrics: dict[str, Any]
     num_steps: int
     num_epochs: float
 
