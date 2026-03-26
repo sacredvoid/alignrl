@@ -1,0 +1,45 @@
+"""Tests for demo module."""
+
+from unittest.mock import MagicMock, patch
+
+from alignrl.demo import MATH_SYSTEM, create_demo
+
+
+class TestCreateDemo:
+    def test_creates_gradio_app(self) -> None:
+        mock_gr = MagicMock()
+        mock_blocks = MagicMock()
+        mock_gr.Blocks.return_value.__enter__ = MagicMock(return_value=mock_blocks)
+        mock_gr.Blocks.return_value.__exit__ = MagicMock(return_value=False)
+
+        mock_server = MagicMock()
+        mock_server.generate.return_value = "test output"
+
+        with patch.dict("sys.modules", {"gradio": mock_gr}), \
+             patch("alignrl.demo.ModelServer", return_value=mock_server) as mock_ms, \
+             patch("alignrl.demo.InferenceConfig"):
+            mock_server.load = MagicMock()
+            app = create_demo(stages={"base": None}, model_name="test-model")
+            assert app is not None
+            mock_server.load.assert_called_once()
+
+    def test_multiple_stages(self) -> None:
+        mock_gr = MagicMock()
+        mock_blocks = MagicMock()
+        mock_gr.Blocks.return_value.__enter__ = MagicMock(return_value=mock_blocks)
+        mock_gr.Blocks.return_value.__exit__ = MagicMock(return_value=False)
+
+        mock_server = MagicMock()
+
+        with patch.dict("sys.modules", {"gradio": mock_gr}), \
+             patch("alignrl.demo.ModelServer", return_value=mock_server), \
+             patch("alignrl.demo.InferenceConfig"):
+            create_demo(
+                stages={"base": None, "sft": "./sft", "grpo": "./grpo"},
+                model_name="test-model",
+            )
+            assert mock_server.load.call_count == 3
+
+    def test_math_system_prompt(self) -> None:
+        assert "math" in MATH_SYSTEM.lower()
+        assert "boxed" in MATH_SYSTEM.lower()
