@@ -125,9 +125,7 @@ class TestEvalRunner:
         assert comparison["gsm8k"]["sft"]["exact_match"] == 0.45
 
     def test_save_results_creates_dir(self, tmp_path: Path) -> None:
-        result = EvalResult(
-            model_name="qwen", stage="base", benchmarks={"arc": {"acc": 0.5}}
-        )
+        result = EvalResult(model_name="qwen", stage="base", benchmarks={"arc": {"acc": 0.5}})
         cfg = EvalConfig()
         runner = EvalRunner(cfg)
         nested = tmp_path / "deep" / "nested" / "dir"
@@ -155,9 +153,7 @@ class TestEvalRunner:
         cfg = EvalConfig(adapter_path="original")
         runner = EvalRunner(cfg)
 
-        mock_result = EvalResult(
-            model_name="qwen", stage="base", benchmarks={}
-        )
+        mock_result = EvalResult(model_name="qwen", stage="base", benchmarks={})
 
         with patch.object(runner, "evaluate", return_value=mock_result):
             runner.evaluate_all_stages({"base": None, "sft": "./adapter"})
@@ -167,9 +163,7 @@ class TestEvalRunner:
         cfg = EvalConfig(model_name="test-model", load_in_4bit=True, adapter_path="./adapter")
         runner = EvalRunner(cfg)
 
-        mock_raw = {
-            "results": {"gsm8k": {"exact_match,strict-match": 0.50}}
-        }
+        mock_raw = {"results": {"gsm8k": {"exact_match,strict-match": 0.50}}}
 
         mock_lm = MagicMock()
         mock_lm.simple_evaluate.return_value = mock_raw

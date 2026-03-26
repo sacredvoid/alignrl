@@ -45,12 +45,12 @@ class TestCmdTrain:
         args = argparse.Namespace(config=str(config_path), stage="sft", push=None)
 
         mock_runner = MagicMock()
-        mock_runner.train.return_value = MagicMock(
-            output_dir=tmp_path, metrics={"train_loss": 0.5}
-        )
+        mock_runner.train.return_value = MagicMock(output_dir=tmp_path, metrics={"train_loss": 0.5})
 
-        with patch("alignrl.sft.SFTRunner", return_value=mock_runner) as mock_cls, \
-             patch("alignrl.sft.SFTConfig") as mock_cfg_cls:
+        with (
+            patch("alignrl.sft.SFTRunner", return_value=mock_runner) as mock_cls,
+            patch("alignrl.sft.SFTConfig") as mock_cfg_cls,
+        ):
             mock_cfg_cls.from_yaml.return_value = MagicMock()
             cmd_train(args)
             mock_cls.assert_called_once()
@@ -62,12 +62,12 @@ class TestCmdTrain:
         args = argparse.Namespace(config=str(config_path), stage="grpo", push=None)
 
         mock_runner = MagicMock()
-        mock_runner.train.return_value = MagicMock(
-            output_dir=tmp_path, metrics={"train_loss": 0.3}
-        )
+        mock_runner.train.return_value = MagicMock(output_dir=tmp_path, metrics={"train_loss": 0.3})
 
-        with patch("alignrl.grpo.GRPORunner", return_value=mock_runner), \
-             patch("alignrl.grpo.GRPOConfig") as mock_cfg_cls:
+        with (
+            patch("alignrl.grpo.GRPORunner", return_value=mock_runner),
+            patch("alignrl.grpo.GRPOConfig") as mock_cfg_cls,
+        ):
             mock_cfg_cls.from_yaml.return_value = MagicMock()
             cmd_train(args)
             mock_runner.train.assert_called_once()
@@ -78,12 +78,12 @@ class TestCmdTrain:
         args = argparse.Namespace(config=str(config_path), stage="dpo", push=None)
 
         mock_runner = MagicMock()
-        mock_runner.train.return_value = MagicMock(
-            output_dir=tmp_path, metrics={"train_loss": 0.2}
-        )
+        mock_runner.train.return_value = MagicMock(output_dir=tmp_path, metrics={"train_loss": 0.2})
 
-        with patch("alignrl.dpo.DPORunner", return_value=mock_runner), \
-             patch("alignrl.dpo.DPOConfig") as mock_cfg_cls:
+        with (
+            patch("alignrl.dpo.DPORunner", return_value=mock_runner),
+            patch("alignrl.dpo.DPOConfig") as mock_cfg_cls,
+        ):
             mock_cfg_cls.from_yaml.return_value = MagicMock()
             cmd_train(args)
             mock_runner.train.assert_called_once()
@@ -116,8 +116,10 @@ class TestCmdEval:
             wandb=False,
         )
 
-        with patch("alignrl.eval.EvalRunner", return_value=mock_runner), \
-             patch("alignrl.eval.EvalConfig"):
+        with (
+            patch("alignrl.eval.EvalRunner", return_value=mock_runner),
+            patch("alignrl.eval.EvalConfig"),
+        ):
             cmd_eval(args)
             mock_runner.evaluate.assert_called_once_with(stage="base")
             assert (tmp_path / "results" / "eval_base.json").exists()

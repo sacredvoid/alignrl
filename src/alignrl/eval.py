@@ -46,8 +46,7 @@ class EvalConfig(BaseTrainConfig):
         if self.preset is not None:
             if self.preset not in BENCHMARK_PRESETS:
                 raise ValueError(
-                    f"Unknown preset {self.preset!r}. "
-                    f"Available: {', '.join(BENCHMARK_PRESETS)}"
+                    f"Unknown preset {self.preset!r}. Available: {', '.join(BENCHMARK_PRESETS)}"
                 )
             self.tasks = BENCHMARK_PRESETS[self.preset]
         else:
@@ -60,7 +59,8 @@ def parse_results(raw: dict[str, Any], model_name: str, stage: str) -> EvalResul
     benchmarks: dict[str, dict[str, float]] = {}
     for task_name, metrics in raw.get("results", {}).items():
         benchmarks[task_name] = {
-            k: v for k, v in metrics.items()
+            k: v
+            for k, v in metrics.items()
             if isinstance(v, (int, float)) and not isinstance(v, bool)
         }
     return EvalResult(model_name=model_name, stage=stage, benchmarks=benchmarks)

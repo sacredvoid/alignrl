@@ -15,9 +15,11 @@ class TestCreateDemo:
         mock_server = MagicMock()
         mock_server.generate.return_value = "test output"
 
-        with patch.dict("sys.modules", {"gradio": mock_gr}), \
-             patch("alignrl.demo.ModelServer", return_value=mock_server), \
-             patch("alignrl.demo.InferenceConfig"):
+        with (
+            patch.dict("sys.modules", {"gradio": mock_gr}),
+            patch("alignrl.demo.ModelServer", return_value=mock_server),
+            patch("alignrl.demo.InferenceConfig"),
+        ):
             mock_server.load = MagicMock()
             app = create_demo(stages={"base": None}, model_name="test-model")
             assert app is not None
@@ -31,9 +33,11 @@ class TestCreateDemo:
 
         mock_server = MagicMock()
 
-        with patch.dict("sys.modules", {"gradio": mock_gr}), \
-             patch("alignrl.demo.ModelServer", return_value=mock_server), \
-             patch("alignrl.demo.InferenceConfig"):
+        with (
+            patch.dict("sys.modules", {"gradio": mock_gr}),
+            patch("alignrl.demo.ModelServer", return_value=mock_server),
+            patch("alignrl.demo.InferenceConfig"),
+        ):
             create_demo(
                 stages={"base": None, "sft": "./sft", "grpo": "./grpo"},
                 model_name="test-model",
@@ -65,9 +69,11 @@ class TestCreateDemo:
         mock_button.click.side_effect = capture_click
         mock_gr.Button.return_value = mock_button
 
-        with patch.dict("sys.modules", {"gradio": mock_gr}), \
-             patch("alignrl.demo.ModelServer", return_value=mock_server), \
-             patch("alignrl.demo.InferenceConfig"):
+        with (
+            patch.dict("sys.modules", {"gradio": mock_gr}),
+            patch("alignrl.demo.ModelServer", return_value=mock_server),
+            patch("alignrl.demo.InferenceConfig"),
+        ):
             create_demo(stages={"base": None, "sft": "./sft"}, model_name="test")
 
         # Now call the captured respond_all function
