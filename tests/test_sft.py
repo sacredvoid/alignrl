@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from alignrl.sft import SFTConfig, format_instruction
+from alignrl.sft import ROLE_MAP, SFTConfig, SFTRunner, format_instruction
 
 
 class TestSFTConfig:
@@ -51,3 +51,55 @@ class TestFormatInstruction:
     def test_empty_conversations_raises(self) -> None:
         with pytest.raises(ValueError, match="empty"):
             format_instruction({"conversations": []})
+
+    def test_unknown_role_passes_through(self) -> None:
+        example = {
+            "conversations": [
+                {"from": "tool", "value": "result"},
+            ]
+        }
+        messages = format_instruction(example)
+        assert messages[0]["role"] == "tool"
+
+    def test_missing_conversations_key_raises(self) -> None:
+        with pytest.raises(ValueError, match="empty"):
+            format_instruction({})
+
+
+class TestRoleMap:
+    def test_maps_human_to_user(self) -> None:
+        assert ROLE_MAP["human"] == "user"
+
+    def test_maps_gpt_to_assistant(self) -> None:
+        assert ROLE_MAP["gpt"] == "assistant"
+
+    def test_maps_system(self) -> None:
+        assert ROLE_MAP["system"] == "system"
+
+
+class TestSFTRunner:
+    def test_init(self) -> None:
+        cfg = SFTConfig()
+        runner = SFTRunner(cfg)
+        assert runner.config is cfg
+        assert runner._model is None
+        assert runner._tokenizer is None
+
+    def test_save_no_model(self, tmp_path: Path) -> None:
+        cfg = SFTConfig()
+        runner = SFTRunner(cfg)
+        runner.save(tmp_path / "output")  # no raise when model is None
+
+    def test_save_no_tokenizer(self, tmp_path: Path) -> None:
+        cfg = SFTConfig()
+        runner = SFTRunner(cfg)
+        runner._model = None
+        runner._tokenizer = None
+        runner.save(tmp_path / "output")  # no raise
+
+    def test_config_fields(self) -> None:
+        cfg = SFTConfig(dataset_name="custom-ds", dataset_split="test", dataset_size=100)
+        assert cfg.dataset_name == "custom-ds"
+        assert cfg.dataset_split == "test"
+        assert cfg.dataset_size == 100
+        assert cfg.chat_template == "chatml"
