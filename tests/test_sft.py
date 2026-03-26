@@ -142,6 +142,44 @@ class TestSFTRunner:
             mock_datasets.load_dataset.assert_called_once()
             mock_ds.select.assert_called_once()
 
+    def test_load_dataset_apply_template(self) -> None:
+        """Test that the _apply_template inner function works correctly."""
+        cfg = SFTConfig(dataset_size=None)
+        runner = SFTRunner(cfg)
+        runner._tokenizer = MagicMock()
+        runner._tokenizer.apply_chat_template.return_value = "formatted chat"
+
+        mock_ds = MagicMock()
+        mock_ds.column_names = ["conversations"]
+
+        # Capture the map callback so we can test it
+        captured_fn = None
+
+        def capture_map(fn, **kwargs):
+            nonlocal captured_fn
+            captured_fn = fn
+            return mock_ds
+
+        mock_ds.map.side_effect = capture_map
+
+        mock_datasets = MagicMock()
+        mock_datasets.load_dataset.return_value = mock_ds
+
+        with patch.dict("sys.modules", {"datasets": mock_datasets}):
+            runner._load_dataset()
+
+        # Now test the captured _apply_template function
+        assert captured_fn is not None
+        example = {
+            "conversations": [
+                {"from": "human", "value": "Hello"},
+                {"from": "gpt", "value": "Hi there"},
+            ]
+        }
+        result = captured_fn(example)
+        assert "text" in result
+        runner._tokenizer.apply_chat_template.assert_called_once()
+
     def test_train(self, tmp_path: Path) -> None:
         cfg = SFTConfig(output_dir=str(tmp_path / "sft_output"))
         runner = SFTRunner(cfg)
