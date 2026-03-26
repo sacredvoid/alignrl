@@ -113,6 +113,8 @@ class SFTRunner:
         trainer.save_model(str(output_dir / "final"))
 
         loss_history = [log["loss"] for log in trainer.state.log_history if "loss" in log]
+        if not loss_history:
+            loss_history = [result.training_loss]
 
         train_result = TrainResult(
             output_dir=output_dir / "final",
