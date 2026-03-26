@@ -32,6 +32,7 @@ class ModelServer:
         self.config = config
         self._model = None
         self._tokenizer = None
+        self._lora_request = None
 
     def load(self) -> None:
         if self.config.backend == "vllm":
@@ -60,7 +61,14 @@ class ModelServer:
 
         kwargs = {"model": self.config.model_name, "dtype": "auto"}
         if self.config.adapter_path:
+            from vllm.lora.request import LoRARequest
+
             kwargs["enable_lora"] = True
+            self._lora_request = LoRARequest(
+                lora_name="adapter",
+                lora_int_id=1,
+                lora_path=self.config.adapter_path,
+            )
         self._model = LLM(**kwargs)
 
     def _load_mlx(self) -> None:
@@ -97,7 +105,10 @@ class ModelServer:
             max_tokens=self.config.max_tokens,
             top_p=self.config.top_p,
         )
-        outputs = self._model.chat(messages, sampling_params=params)
+        kwargs = {"sampling_params": params}
+        if self._lora_request:
+            kwargs["lora_request"] = self._lora_request
+        outputs = self._model.chat(messages, **kwargs)
         return outputs[0].outputs[0].text
 
     def _generate_mlx(self, messages: list[dict[str, str]]) -> str:

@@ -102,10 +102,12 @@ class TestModelServer:
         server = ModelServer(cfg)
 
         mock_vllm = MagicMock()
-        with patch.dict("sys.modules", {"vllm": mock_vllm}):
+        mock_lora_mod = MagicMock()
+        with patch.dict("sys.modules", {"vllm": mock_vllm, "vllm.lora.request": mock_lora_mod}):
             server._load_vllm()
             call_kwargs = mock_vllm.LLM.call_args[1]
             assert call_kwargs["enable_lora"] is True
+            assert server._lora_request is not None
 
     def test_load_vllm_without_adapter(self) -> None:
         cfg = InferenceConfig(backend="vllm", adapter_path=None)
@@ -116,6 +118,7 @@ class TestModelServer:
             server._load_vllm()
             call_kwargs = mock_vllm.LLM.call_args[1]
             assert "enable_lora" not in call_kwargs
+            assert server._lora_request is None
 
     def test_load_mlx(self) -> None:
         cfg = InferenceConfig(backend="mlx", model_name="test-model")
@@ -146,6 +149,24 @@ class TestModelServer:
             server._model.chat.assert_called_once()
             call_args = server._model.chat.call_args
             assert call_args[0][0] == messages
+
+    def test_generate_vllm_with_lora(self) -> None:
+        cfg = InferenceConfig(backend="vllm")
+        server = ModelServer(cfg)
+        server._model = MagicMock()
+        server._lora_request = MagicMock()
+
+        mock_output = MagicMock()
+        mock_output.outputs = [MagicMock(text="lora result")]
+        server._model.chat.return_value = [mock_output]
+
+        messages = [{"role": "user", "content": "hi"}]
+        mock_vllm = MagicMock()
+        with patch.dict("sys.modules", {"vllm": mock_vllm}):
+            result = server._generate_vllm(messages)
+            assert result == "lora result"
+            call_kwargs = server._model.chat.call_args[1]
+            assert "lora_request" in call_kwargs
 
     def test_generate_mlx(self) -> None:
         cfg = InferenceConfig(backend="mlx")
