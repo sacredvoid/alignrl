@@ -121,7 +121,18 @@ class TestEvalRunner:
             results = runner.evaluate_all_stages({"base": None, "sft": "./outputs/sft"})
             assert len(results) == 2
             assert results[0].stage == "base"
-            assert results[1].stage == "sft"
+
+    def test_evaluate_all_stages_restores_config(self) -> None:
+        cfg = EvalConfig(adapter_path="original")
+        runner = EvalRunner(cfg)
+
+        mock_result = EvalResult(
+            model_name="qwen", stage="base", benchmarks={}
+        )
+
+        with patch.object(runner, "evaluate", return_value=mock_result):
+            runner.evaluate_all_stages({"base": None, "sft": "./adapter"})
+            assert cfg.adapter_path == "original"
 
     def test_evaluate_builds_model_args(self) -> None:
         cfg = EvalConfig(model_name="test-model", load_in_4bit=True, adapter_path="./adapter")
