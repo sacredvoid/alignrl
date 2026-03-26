@@ -97,7 +97,7 @@ class ModelServer:
             max_tokens=self.config.max_tokens,
             top_p=self.config.top_p,
         )
-        outputs = self._model.generate([str(messages)], params)
+        outputs = self._model.chat(messages, sampling_params=params)
         return outputs[0].outputs[0].text
 
     def _generate_mlx(self, messages: list[dict[str, str]]) -> str:
