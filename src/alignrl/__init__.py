@@ -21,6 +21,8 @@ _LAZY_IMPORTS: dict[str, str] = {
     "build_prompt": "alignrl.inference",
     "TrainResult": "alignrl.types",
     "EvalResult": "alignrl.types",
+    "push_adapter": "alignrl.hub",
+    "merge_and_push": "alignrl.hub",
 }
 
 

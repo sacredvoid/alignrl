@@ -40,6 +40,11 @@ def cmd_train(args: argparse.Namespace) -> None:
     print(f"Training complete. Output: {result.output_dir}")
     print(f"Final loss: {result.metrics.get('train_loss', 'N/A')}")
 
+    if args.push:
+        print(f"Pushing adapter to HuggingFace Hub: {args.push}")
+        url = runner.push_to_hub(args.push)
+        print(f"Pushed to: {url}")
+
 
 def cmd_eval(args: argparse.Namespace) -> None:
     """Run evaluation benchmarks."""
@@ -90,6 +95,7 @@ def main() -> None:
     train_p = sub.add_parser("train", help="Run training pipeline")
     train_p.add_argument("stage", choices=["sft", "grpo", "dpo"])
     train_p.add_argument("-c", "--config", required=True, help="Path to YAML config")
+    train_p.add_argument("--push", default=None, help="Push adapter to HF Hub (repo ID)")
     train_p.set_defaults(func=cmd_train)
 
     # Eval

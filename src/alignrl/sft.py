@@ -133,6 +133,25 @@ class SFTRunner:
         if self._tokenizer:
             self._tokenizer.save_pretrained(str(path))
 
+    def push_to_hub(self, repo_id: str, merge: bool = False, private: bool = False) -> str:
+        """Push the trained adapter (or merged model) to HuggingFace Hub."""
+        from alignrl.hub import merge_and_push, push_adapter
+
+        if merge:
+            return merge_and_push(
+                model_name=self.config.model_name,
+                adapter_path=str(self.config.output_dir / "final"),
+                repo_id=repo_id,
+                max_seq_length=self.config.max_seq_length,
+                load_in_4bit=self.config.load_in_4bit,
+                private=private,
+            )
+        return push_adapter(
+            output_dir=str(self.config.output_dir / "final"),
+            repo_id=repo_id,
+            private=private,
+        )
+
     def load(self, path: Path) -> None:
         from unsloth import FastLanguageModel
 

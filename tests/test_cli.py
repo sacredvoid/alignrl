@@ -42,7 +42,7 @@ class TestCmdTrain:
     def test_train_sft_stage(self, tmp_path) -> None:
         config_path = tmp_path / "sft.yaml"
         config_path.write_text("model_name: test\nmax_steps: 1\n")
-        args = argparse.Namespace(config=str(config_path), stage="sft")
+        args = argparse.Namespace(config=str(config_path), stage="sft", push=None)
 
         mock_runner = MagicMock()
         mock_runner.train.return_value = MagicMock(
@@ -59,7 +59,7 @@ class TestCmdTrain:
     def test_train_grpo_stage(self, tmp_path) -> None:
         config_path = tmp_path / "grpo.yaml"
         config_path.write_text("model_name: test\n")
-        args = argparse.Namespace(config=str(config_path), stage="grpo")
+        args = argparse.Namespace(config=str(config_path), stage="grpo", push=None)
 
         mock_runner = MagicMock()
         mock_runner.train.return_value = MagicMock(
@@ -75,7 +75,7 @@ class TestCmdTrain:
     def test_train_dpo_stage(self, tmp_path) -> None:
         config_path = tmp_path / "dpo.yaml"
         config_path.write_text("model_name: test\n")
-        args = argparse.Namespace(config=str(config_path), stage="dpo")
+        args = argparse.Namespace(config=str(config_path), stage="dpo", push=None)
 
         mock_runner = MagicMock()
         mock_runner.train.return_value = MagicMock(
@@ -91,7 +91,7 @@ class TestCmdTrain:
     def test_train_unknown_stage_exits(self, tmp_path) -> None:
         config_path = tmp_path / "test.yaml"
         config_path.write_text("model_name: test\n")
-        args = argparse.Namespace(config=str(config_path), stage="unknown")
+        args = argparse.Namespace(config=str(config_path), stage="unknown", push=None)
         with pytest.raises(SystemExit):
             cmd_train(args)
 
