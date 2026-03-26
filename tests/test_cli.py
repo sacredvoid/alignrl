@@ -113,6 +113,7 @@ class TestCmdEval:
             limit=None,
             stage="base",
             output=str(tmp_path / "results"),
+            wandb=False,
         )
 
         with patch("alignrl.eval.EvalRunner", return_value=mock_runner), \

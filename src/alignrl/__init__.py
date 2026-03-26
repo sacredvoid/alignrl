@@ -23,6 +23,8 @@ _LAZY_IMPORTS: dict[str, str] = {
     "EvalResult": "alignrl.types",
     "push_adapter": "alignrl.hub",
     "merge_and_push": "alignrl.hub",
+    "detect_wandb": "alignrl.callbacks",
+    "log_eval_to_wandb": "alignrl.callbacks",
 }
 
 

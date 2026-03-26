@@ -73,6 +73,12 @@ def cmd_eval(args: argparse.Namespace) -> None:
     for benchmark, metrics in result.benchmarks.items():
         print(f"  {benchmark}: {metrics}")
 
+    if args.wandb:
+        from alignrl.callbacks import log_eval_to_wandb
+
+        log_eval_to_wandb([result])
+        print("Results logged to Weights & Biases.")
+
 
 def cmd_serve(args: argparse.Namespace) -> None:
     """Launch Gradio demo."""
@@ -112,6 +118,7 @@ def main() -> None:
     )
     eval_p.add_argument("--limit", type=int, default=None)
     eval_p.add_argument("--output", default="./results")
+    eval_p.add_argument("--wandb", action="store_true", help="Log results to W&B")
     eval_p.set_defaults(func=cmd_eval)
 
     # Serve
