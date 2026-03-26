@@ -63,7 +63,7 @@ class SFTRunner:
         from datasets import load_dataset
 
         ds = load_dataset(self.config.dataset_name, split=self.config.dataset_split)
-        if self.config.dataset_size:
+        if self.config.dataset_size is not None:
             ds = ds.select(range(min(self.config.dataset_size, len(ds))))
 
         def _apply_template(example):
