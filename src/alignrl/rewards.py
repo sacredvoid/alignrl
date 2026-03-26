@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import math
 import re
+
+_RE_ANSWER = re.compile(r"(?:the answer is|answer:)\s*([^\s.,]+)", re.IGNORECASE)
+_RE_EQUALS = re.compile(r"=\s*([^\s.,=]+)")
 
 
 def _extract_boxed_contents(text: str) -> list[str]:
@@ -40,11 +44,11 @@ def extract_answer(text: str) -> str | None:
     if boxed:
         return boxed[-1].strip()
 
-    answer_match = re.findall(r"(?:the answer is|answer:)\s*([^\s.,]+)", text, re.IGNORECASE)
+    answer_match = _RE_ANSWER.findall(text)
     if answer_match:
         return answer_match[-1].strip()
 
-    eq_match = re.findall(r"=\s*([^\s.,=]+)", text)
+    eq_match = _RE_EQUALS.findall(text)
     if eq_match:
         return eq_match[-1].strip()
 
@@ -53,8 +57,6 @@ def extract_answer(text: str) -> str | None:
 
 def _normalize_numeric(s: str) -> str | None:
     """Try to parse as a number for comparison."""
-    import math
-
     s = s.strip().rstrip(".")
     try:
         val = float(s)
