@@ -53,13 +53,17 @@ def extract_answer(text: str) -> str | None:
 
 def _normalize_numeric(s: str) -> str | None:
     """Try to parse as a number for comparison."""
+    import math
+
     s = s.strip().rstrip(".")
     try:
         val = float(s)
+        if not math.isfinite(val):
+            return None
         if val == int(val):
             return str(int(val))
         return str(val)
-    except ValueError:
+    except (ValueError, OverflowError):
         return None
 
 

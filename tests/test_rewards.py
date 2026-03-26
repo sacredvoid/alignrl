@@ -114,6 +114,14 @@ class TestNormalizeNumeric:
     def test_trailing_dot(self) -> None:
         assert _normalize_numeric("42.") == "42"
 
+    def test_infinity_returns_none(self) -> None:
+        assert _normalize_numeric("inf") is None
+        assert _normalize_numeric("infinity") is None
+        assert _normalize_numeric("-inf") is None
+
+    def test_nan_returns_none(self) -> None:
+        assert _normalize_numeric("nan") is None
+
 
 class TestAnswersMatch:
     def test_exact_match(self) -> None:
