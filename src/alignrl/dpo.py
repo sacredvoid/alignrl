@@ -134,3 +134,4 @@ class DPORunner:
             max_seq_length=self.config.max_seq_length,
             load_in_4bit=self.config.load_in_4bit,
         )
+        ensure_chat_template(self._tokenizer)
