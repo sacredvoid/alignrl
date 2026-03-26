@@ -155,3 +155,78 @@ class TestModelServer:
         with patch.dict("sys.modules", {"mlx_lm": mock_mlx}):
             result = server._generate_mlx([{"role": "user", "content": "hi"}])
             assert result == "mlx result"
+
+    def test_load_unsloth(self) -> None:
+        cfg = InferenceConfig(backend="unsloth", model_name="test-model")
+        server = ModelServer(cfg)
+
+        mock_unsloth = MagicMock()
+        mock_model = MagicMock()
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.chat_template = None
+        mock_unsloth.FastLanguageModel.from_pretrained.return_value = (mock_model, mock_tokenizer)
+
+        with patch.dict("sys.modules", {"unsloth": mock_unsloth}):
+            server._load_unsloth()
+            mock_unsloth.FastLanguageModel.from_pretrained.assert_called_once()
+            mock_unsloth.FastLanguageModel.for_inference.assert_called_once_with(mock_model)
+            assert server._model is mock_model
+
+    def test_load_unsloth_with_adapter(self) -> None:
+        cfg = InferenceConfig(backend="unsloth", adapter_path="./adapter")
+        server = ModelServer(cfg)
+
+        mock_unsloth = MagicMock()
+        mock_model = MagicMock()
+        mock_tokenizer = MagicMock()
+        mock_tokenizer.chat_template = "existing"
+        mock_unsloth.FastLanguageModel.from_pretrained.return_value = (mock_model, mock_tokenizer)
+
+        with patch.dict("sys.modules", {"unsloth": mock_unsloth}):
+            server._load_unsloth()
+            call_kwargs = mock_unsloth.FastLanguageModel.from_pretrained.call_args[1]
+            assert call_kwargs["model_name"] == "./adapter"
+
+    def test_generate_unsloth(self) -> None:
+        cfg = InferenceConfig(backend="unsloth", temperature=0.5)
+        server = ModelServer(cfg)
+        server._model = MagicMock()
+        server._tokenizer = MagicMock()
+
+        import torch
+
+        mock_inputs = torch.tensor([[1, 2, 3]])
+        server._tokenizer.apply_chat_template.return_value = mock_inputs
+        mock_inputs_on_device = MagicMock()
+        mock_inputs_on_device.shape = MagicMock()
+        mock_inputs_on_device.shape.__getitem__ = MagicMock(return_value=3)
+        server._tokenizer.apply_chat_template.return_value = MagicMock()
+        server._tokenizer.apply_chat_template.return_value.to.return_value = mock_inputs_on_device
+
+        mock_outputs = MagicMock()
+        mock_outputs.__getitem__ = MagicMock(return_value=MagicMock())
+        server._model.generate.return_value = mock_outputs
+        server._tokenizer.decode.return_value = "unsloth result"
+
+        result = server._generate_unsloth([{"role": "user", "content": "hi"}])
+        assert result == "unsloth result"
+        server._model.generate.assert_called_once()
+
+    def test_generate_unsloth_zero_temp(self) -> None:
+        cfg = InferenceConfig(backend="unsloth", temperature=0.0)
+        server = ModelServer(cfg)
+        server._model = MagicMock()
+        server._tokenizer = MagicMock()
+
+        mock_inputs = MagicMock()
+        mock_inputs.shape = MagicMock()
+        mock_inputs.shape.__getitem__ = MagicMock(return_value=3)
+        server._tokenizer.apply_chat_template.return_value = MagicMock()
+        server._tokenizer.apply_chat_template.return_value.to.return_value = mock_inputs
+
+        server._model.generate.return_value = MagicMock()
+        server._tokenizer.decode.return_value = "deterministic"
+
+        result = server._generate_unsloth([{"role": "user", "content": "hi"}])
+        call_kwargs = server._model.generate.call_args[1]
+        assert call_kwargs["do_sample"] is False
