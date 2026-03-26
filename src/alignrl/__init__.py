@@ -31,7 +31,9 @@ _LAZY_IMPORTS: dict[str, str] = {
 def __getattr__(name: str):
     if name in _LAZY_IMPORTS:
         module = importlib.import_module(_LAZY_IMPORTS[name])
-        return getattr(module, name)
+        attr = getattr(module, name)
+        globals()[name] = attr
+        return attr
     raise AttributeError(f"module 'alignrl' has no attribute {name!r}")
 
 
