@@ -104,7 +104,7 @@ class SFTRunner:
 
         trainer = SFTTrainer(
             model=self._model,
-            tokenizer=self._tokenizer,
+            processing_class=self._tokenizer,
             train_dataset=dataset,
             args=training_args,
         )
