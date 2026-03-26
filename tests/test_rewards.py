@@ -1,6 +1,12 @@
 """Tests for reward functions."""
 
-from alignrl.rewards import extract_answer, format_reward, math_verify_reward
+from alignrl.rewards import (
+    _answers_match,
+    _normalize_numeric,
+    extract_answer,
+    format_reward,
+    math_verify_reward,
+)
 
 
 class TestExtractAnswer:
@@ -71,3 +77,45 @@ class TestFormatReward:
         bad_rewards = format_reward(completions)
         good_rewards = format_reward(good)
         assert good_rewards[0] >= bad_rewards[0]
+
+    def test_empty_completion(self) -> None:
+        rewards = format_reward([[]])
+        assert rewards == [0.0]
+
+
+class TestNormalizeNumeric:
+    def test_integer(self) -> None:
+        assert _normalize_numeric("42") == "42"
+
+    def test_float_equal_to_int(self) -> None:
+        assert _normalize_numeric("3.0") == "3"
+
+    def test_non_integer_float(self) -> None:
+        assert _normalize_numeric("3.14") == "3.14"
+
+    def test_non_numeric(self) -> None:
+        assert _normalize_numeric("abc") is None
+
+    def test_trailing_dot(self) -> None:
+        assert _normalize_numeric("42.") == "42"
+
+
+class TestAnswersMatch:
+    def test_exact_match(self) -> None:
+        assert _answers_match("42", "42") is True
+
+    def test_numeric_equivalence(self) -> None:
+        assert _answers_match("3.0", "3") is True
+
+    def test_non_matching_strings(self) -> None:
+        assert _answers_match("hello", "world") is False
+
+    def test_non_matching_numbers(self) -> None:
+        assert _answers_match("3", "4") is False
+
+
+class TestMathVerifyRewardEdgeCases:
+    def test_empty_completion_list(self) -> None:
+        completions = [[]]
+        rewards = math_verify_reward(completions, solution=["42"])
+        assert rewards == [0.0]
