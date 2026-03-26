@@ -107,12 +107,24 @@ def format_reward(
     rewards: list[float] = []
     for completion in completions:
         content = completion[0]["content"] if completion else ""
-        if not re.search(r"\\boxed\{[^}]+\}", content):
+        last_boxed = content.rfind("\\boxed{")
+        if last_boxed == -1:
             rewards.append(0.0)
             continue
-        last_boxed = content.rfind("\\boxed{")
-        remaining = content[last_boxed:].count("}") + last_boxed
-        tail = content[remaining:].strip()
+        # Walk forward from opening brace to find matching close brace
+        start = last_boxed + len("\\boxed{")
+        depth = 1
+        pos = start
+        while pos < len(content) and depth > 0:
+            if content[pos] == "{":
+                depth += 1
+            elif content[pos] == "}":
+                depth -= 1
+            pos += 1
+        if depth != 0:
+            rewards.append(0.0)
+            continue
+        tail = content[pos:].strip()
         if len(tail) < 20:
             rewards.append(1.0)
         else:

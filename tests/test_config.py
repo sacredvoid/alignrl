@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from alignrl.config import BaseTrainConfig
+from alignrl.config import CHATML_TEMPLATE, BaseTrainConfig, ensure_chat_template
 
 
 class TestBaseTrainConfig:
@@ -51,3 +51,30 @@ class TestBaseTrainConfigValidation:
     def test_custom_lora_modules(self) -> None:
         cfg = BaseTrainConfig(lora_target_modules=["q_proj", "k_proj"])
         assert cfg.lora_target_modules == ["q_proj", "k_proj"]
+
+
+class TestEnsureChatTemplate:
+    def test_sets_template_when_missing(self) -> None:
+        class FakeTokenizer:
+            chat_template = None
+
+        tok = FakeTokenizer()
+        ensure_chat_template(tok)
+        assert tok.chat_template == CHATML_TEMPLATE
+
+    def test_preserves_existing_template(self) -> None:
+        class FakeTokenizer:
+            chat_template = "{% for m in messages %}custom{% endfor %}"
+
+        tok = FakeTokenizer()
+        original = tok.chat_template
+        ensure_chat_template(tok)
+        assert tok.chat_template == original
+
+    def test_handles_no_attribute(self) -> None:
+        class FakeTokenizer:
+            pass
+
+        tok = FakeTokenizer()
+        ensure_chat_template(tok)
+        assert tok.chat_template == CHATML_TEMPLATE
