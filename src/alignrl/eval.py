@@ -75,11 +75,15 @@ class EvalRunner:
 
     def evaluate_all_stages(self, adapter_paths: dict[str, str | None]) -> list[EvalResult]:
         """Evaluate multiple stages and return comparison-ready results."""
+        original_adapter = self.config.adapter_path
         results = []
-        for stage, adapter_path in adapter_paths.items():
-            self.config.adapter_path = adapter_path
-            result = self.evaluate(stage=stage)
-            results.append(result)
+        try:
+            for stage, adapter_path in adapter_paths.items():
+                self.config.adapter_path = adapter_path
+                result = self.evaluate(stage=stage)
+                results.append(result)
+        finally:
+            self.config.adapter_path = original_adapter
         return results
 
     def save_results(self, results: list[EvalResult], output_dir: Path) -> None:
