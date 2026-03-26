@@ -88,7 +88,7 @@ class GRPORunner:
             self.config.dataset_config,
             split=self.config.dataset_split,
         )
-        if self.config.dataset_size:
+        if self.config.dataset_size is not None:
             ds = ds.select(range(min(self.config.dataset_size, len(ds))))
         return ds.map(_format_gsm8k_prompt, remove_columns=ds.column_names)
 

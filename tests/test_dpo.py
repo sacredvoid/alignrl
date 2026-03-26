@@ -124,6 +124,22 @@ class TestDPORunner:
             runner._load_dataset()
             mock_ds.select.assert_not_called()
 
+    def test_load_dataset_size_zero_selects(self) -> None:
+        cfg = DPOConfig(dataset_size=0)
+        runner = DPORunner(cfg)
+
+        mock_ds = MagicMock()
+        mock_ds.__len__ = MagicMock(return_value=100)
+        mock_ds.select.return_value = mock_ds
+        mock_ds.map.return_value = mock_ds
+
+        mock_datasets = MagicMock()
+        mock_datasets.load_dataset.return_value = mock_ds
+
+        with patch.dict("sys.modules", {"datasets": mock_datasets}):
+            runner._load_dataset()
+            mock_ds.select.assert_called_once_with(range(0))
+
     def test_train(self, tmp_path: Path) -> None:
         cfg = DPOConfig(output_dir=str(tmp_path / "dpo_output"))
         runner = DPORunner(cfg)
