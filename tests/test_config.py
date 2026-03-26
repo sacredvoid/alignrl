@@ -32,6 +32,18 @@ class TestBaseTrainConfig:
         assert cfg.model_name == "partial-model"
         assert cfg.learning_rate == 2e-4  # default preserved
 
+    def test_from_yaml_empty_file(self, tmp_path: Path) -> None:
+        yaml_path = tmp_path / "empty.yaml"
+        yaml_path.write_text("")
+        cfg = BaseTrainConfig.from_yaml(yaml_path)
+        assert cfg.model_name == "Qwen/Qwen2.5-3B"  # all defaults
+
+    def test_from_yaml_empty_doc(self, tmp_path: Path) -> None:
+        yaml_path = tmp_path / "empty_doc.yaml"
+        yaml_path.write_text("---\n")
+        cfg = BaseTrainConfig.from_yaml(yaml_path)
+        assert cfg.model_name == "Qwen/Qwen2.5-3B"
+
     def test_output_dir_is_path(self) -> None:
         cfg = BaseTrainConfig(output_dir="./my-output")
         assert isinstance(cfg.output_dir, Path)

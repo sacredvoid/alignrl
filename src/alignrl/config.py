@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class BaseTrainConfig(BaseModel):
@@ -37,10 +41,10 @@ class BaseTrainConfig(BaseModel):
     load_in_4bit: bool = True
 
     @classmethod
-    def from_yaml(cls, path: Path) -> BaseTrainConfig:
+    def from_yaml(cls, path: Path) -> Self:
         with open(path) as f:
             data = yaml.safe_load(f)
-        return cls(**data)
+        return cls(**(data or {}))
 
 
 # ChatML template used as fallback when the tokenizer doesn't have one set.
