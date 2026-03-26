@@ -136,12 +136,16 @@ class TestModelServer:
 
         mock_output = MagicMock()
         mock_output.outputs = [MagicMock(text="vllm result")]
-        server._model.generate.return_value = [mock_output]
+        server._model.chat.return_value = [mock_output]
 
+        messages = [{"role": "user", "content": "hi"}]
         mock_vllm = MagicMock()
         with patch.dict("sys.modules", {"vllm": mock_vllm}):
-            result = server._generate_vllm([{"role": "user", "content": "hi"}])
+            result = server._generate_vllm(messages)
             assert result == "vllm result"
+            server._model.chat.assert_called_once()
+            call_args = server._model.chat.call_args
+            assert call_args[0][0] == messages
 
     def test_generate_mlx(self) -> None:
         cfg = InferenceConfig(backend="mlx")
