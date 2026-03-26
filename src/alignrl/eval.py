@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from alignrl.config import BaseTrainConfig
 from alignrl.types import EvalResult
@@ -13,15 +13,46 @@ from alignrl.types import EvalResult
 if TYPE_CHECKING:
     from pathlib import Path
 
+BENCHMARK_PRESETS: dict[str, list[str]] = {
+    "core": ["gsm8k", "arc_challenge", "hellaswag", "mmlu", "winogrande"],
+    "reasoning": ["gsm8k", "math", "arc_challenge"],
+    "leaderboard": [
+        "gsm8k",
+        "arc_challenge",
+        "hellaswag",
+        "mmlu",
+        "winogrande",
+        "truthfulqa_mc2",
+    ],
+}
+
+_DEFAULT_TASKS = ["gsm8k", "arc_challenge"]
+
 
 class EvalConfig(BaseTrainConfig):
     """Evaluation configuration."""
 
-    tasks: list[str] = Field(default=["gsm8k", "arc_challenge"])
+    tasks: list[str] = Field(default=_DEFAULT_TASKS)
+    preset: str | None = None
     num_fewshot: int = 0
     batch_size: str = "auto"
     limit: int | None = None
     adapter_path: str | None = None
+
+    @model_validator(mode="after")
+    def _resolve_preset(self) -> EvalConfig:
+        if self.tasks != _DEFAULT_TASKS:
+            return self
+        if self.preset is not None:
+            if self.preset not in BENCHMARK_PRESETS:
+                raise ValueError(
+                    f"Unknown preset {self.preset!r}. "
+                    f"Available: {', '.join(BENCHMARK_PRESETS)}"
+                )
+            self.tasks = BENCHMARK_PRESETS[self.preset]
+        else:
+            self.tasks = BENCHMARK_PRESETS["core"]
+        return self
 
 
 def parse_results(raw: dict[str, Any], model_name: str, stage: str) -> EvalResult:

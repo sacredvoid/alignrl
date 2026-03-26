@@ -109,6 +109,7 @@ class TestCmdEval:
             model="test-model",
             adapter=None,
             tasks="gsm8k",
+            preset=None,
             limit=None,
             stage="base",
             output=str(tmp_path / "results"),

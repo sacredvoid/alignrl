@@ -4,19 +4,48 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from alignrl.eval import EvalConfig, EvalRunner, compare_stages, parse_results
+import pytest
+
+from alignrl.eval import (
+    BENCHMARK_PRESETS,
+    EvalConfig,
+    EvalRunner,
+    compare_stages,
+    parse_results,
+)
 from alignrl.types import EvalResult
 
 
 class TestEvalConfig:
-    def test_defaults(self) -> None:
+    def test_defaults_use_core_preset(self) -> None:
         cfg = EvalConfig()
+        assert cfg.tasks == BENCHMARK_PRESETS["core"]
         assert "gsm8k" in cfg.tasks
+        assert "hellaswag" in cfg.tasks
+        assert "mmlu" in cfg.tasks
         assert cfg.num_fewshot == 0
 
-    def test_custom_tasks(self) -> None:
+    def test_custom_tasks_override_preset(self) -> None:
         cfg = EvalConfig(tasks=["mmlu", "hellaswag"])
         assert cfg.tasks == ["mmlu", "hellaswag"]
+
+    def test_preset_reasoning(self) -> None:
+        cfg = EvalConfig(preset="reasoning")
+        assert cfg.tasks == BENCHMARK_PRESETS["reasoning"]
+        assert "math" in cfg.tasks
+
+    def test_preset_leaderboard(self) -> None:
+        cfg = EvalConfig(preset="leaderboard")
+        assert cfg.tasks == BENCHMARK_PRESETS["leaderboard"]
+        assert "truthfulqa_mc2" in cfg.tasks
+
+    def test_explicit_tasks_override_preset(self) -> None:
+        cfg = EvalConfig(tasks=["gsm8k"], preset="leaderboard")
+        assert cfg.tasks == ["gsm8k"]
+
+    def test_unknown_preset_raises(self) -> None:
+        with pytest.raises(ValueError, match="Unknown preset"):
+            EvalConfig(preset="nonexistent")
 
 
 class TestParseResults:

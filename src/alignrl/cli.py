@@ -45,12 +45,17 @@ def cmd_eval(args: argparse.Namespace) -> None:
     """Run evaluation benchmarks."""
     from alignrl.eval import EvalConfig, EvalRunner
 
-    config = EvalConfig(
-        model_name=args.model,
-        adapter_path=args.adapter,
-        tasks=args.tasks.split(","),
-        limit=args.limit,
-    )
+    config_kwargs: dict = {
+        "model_name": args.model,
+        "adapter_path": args.adapter,
+        "limit": args.limit,
+    }
+    if args.tasks:
+        config_kwargs["tasks"] = args.tasks.split(",")
+    if args.preset:
+        config_kwargs["preset"] = args.preset
+
+    config = EvalConfig(**config_kwargs)
     runner = EvalRunner(config)
     result = runner.evaluate(stage=args.stage)
 
@@ -92,7 +97,13 @@ def main() -> None:
     eval_p.add_argument("--model", default="Qwen/Qwen2.5-3B")
     eval_p.add_argument("--adapter", default=None, help="Path to LoRA adapter")
     eval_p.add_argument("--stage", default="base", help="Stage label (base/sft/grpo/dpo)")
-    eval_p.add_argument("--tasks", default="gsm8k,arc_challenge")
+    eval_p.add_argument("--tasks", default=None, help="Comma-separated task list (overrides preset)")
+    eval_p.add_argument(
+        "--preset",
+        default=None,
+        choices=["core", "reasoning", "leaderboard"],
+        help="Benchmark preset (default: core)",
+    )
     eval_p.add_argument("--limit", type=int, default=None)
     eval_p.add_argument("--output", default="./results")
     eval_p.set_defaults(func=cmd_eval)
