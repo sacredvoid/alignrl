@@ -28,7 +28,10 @@ def parse_results(raw: dict[str, Any], model_name: str, stage: str) -> EvalResul
     """Parse lm-evaluation-harness output into EvalResult."""
     benchmarks: dict[str, dict[str, float]] = {}
     for task_name, metrics in raw.get("results", {}).items():
-        benchmarks[task_name] = {k: v for k, v in metrics.items() if isinstance(v, (int, float))}
+        benchmarks[task_name] = {
+            k: v for k, v in metrics.items()
+            if isinstance(v, (int, float)) and not isinstance(v, bool)
+        }
     return EvalResult(model_name=model_name, stage=stage, benchmarks=benchmarks)
 
 

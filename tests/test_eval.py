@@ -171,3 +171,18 @@ class TestParseResultsEdgeCases:
     def test_no_results_key(self) -> None:
         result = parse_results({}, model_name="test", stage="base")
         assert result.benchmarks == {}
+
+    def test_filters_booleans(self) -> None:
+        raw = {
+            "results": {
+                "gsm8k": {
+                    "exact_match": 0.5,
+                    "has_config": True,
+                    "is_valid": False,
+                }
+            }
+        }
+        result = parse_results(raw, model_name="test", stage="base")
+        assert "exact_match" in result.benchmarks["gsm8k"]
+        assert "has_config" not in result.benchmarks["gsm8k"]
+        assert "is_valid" not in result.benchmarks["gsm8k"]
