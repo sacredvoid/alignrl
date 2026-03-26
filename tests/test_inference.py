@@ -218,10 +218,6 @@ class TestModelServer:
         server._model = MagicMock()
         server._tokenizer = MagicMock()
 
-        import torch
-
-        mock_inputs = torch.tensor([[1, 2, 3]])
-        server._tokenizer.apply_chat_template.return_value = mock_inputs
         mock_inputs_on_device = MagicMock()
         mock_inputs_on_device.shape = MagicMock()
         mock_inputs_on_device.shape.__getitem__ = MagicMock(return_value=3)
