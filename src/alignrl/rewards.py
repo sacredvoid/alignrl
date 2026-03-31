@@ -90,7 +90,7 @@ def math_verify_reward(
     Compatible with TRL GRPOTrainer reward_funcs signature.
     """
     rewards: list[float] = []
-    for completion, sol in zip(completions, solution, strict=False):
+    for completion, sol in zip(completions, solution, strict=True):
         content = completion[0]["content"] if completion else ""
         predicted = extract_answer(content)
         if predicted and _answers_match(predicted, sol):

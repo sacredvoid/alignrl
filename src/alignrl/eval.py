@@ -26,13 +26,13 @@ BENCHMARK_PRESETS: dict[str, list[str]] = {
     ],
 }
 
-_DEFAULT_TASKS = ["gsm8k", "arc_challenge"]
+_SENTINEL_TASKS: list[str] = []
 
 
 class EvalConfig(BaseTrainConfig):
     """Evaluation configuration."""
 
-    tasks: list[str] = Field(default=_DEFAULT_TASKS)
+    tasks: list[str] = Field(default_factory=list)
     preset: str | None = None
     num_fewshot: int = 0
     batch_size: str = "auto"
@@ -41,16 +41,16 @@ class EvalConfig(BaseTrainConfig):
 
     @model_validator(mode="after")
     def _resolve_preset(self) -> EvalConfig:
-        if self.tasks != _DEFAULT_TASKS:
+        # If the user explicitly provided tasks, keep them as-is.
+        if self.tasks:
             return self
-        if self.preset is not None:
-            if self.preset not in BENCHMARK_PRESETS:
-                raise ValueError(
-                    f"Unknown preset {self.preset!r}. Available: {', '.join(BENCHMARK_PRESETS)}"
-                )
-            self.tasks = list(BENCHMARK_PRESETS[self.preset])
-        else:
-            self.tasks = list(BENCHMARK_PRESETS["core"])
+        # Otherwise, resolve from preset (or fall back to "core").
+        preset = self.preset or "core"
+        if preset not in BENCHMARK_PRESETS:
+            raise ValueError(
+                f"Unknown preset {preset!r}. Available: {', '.join(BENCHMARK_PRESETS)}"
+            )
+        self.tasks = list(BENCHMARK_PRESETS[preset])
         return self
 
 
@@ -109,15 +109,12 @@ class EvalRunner:
 
     def evaluate_all_stages(self, adapter_paths: dict[str, str | None]) -> list[EvalResult]:
         """Evaluate multiple stages and return comparison-ready results."""
-        original_adapter = self.config.adapter_path
         results = []
-        try:
-            for stage, adapter_path in adapter_paths.items():
-                self.config.adapter_path = adapter_path
-                result = self.evaluate(stage=stage)
-                results.append(result)
-        finally:
-            self.config.adapter_path = original_adapter
+        for stage, adapter_path in adapter_paths.items():
+            stage_config = self.config.model_copy(update={"adapter_path": adapter_path})
+            stage_runner = EvalRunner(stage_config)
+            result = stage_runner.evaluate(stage=stage)
+            results.append(result)
         return results
 
     def save_results(self, results: list[EvalResult], output_dir: Path) -> None:

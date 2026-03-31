@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from alignrl.config import BaseTrainConfig, ensure_chat_template
+from alignrl.config import BaseTrainConfig
 from alignrl.rewards import format_reward, math_verify_reward
+from alignrl.runner_base import BaseRunner
 from alignrl.types import TrainResult
 
 if TYPE_CHECKING:
@@ -38,7 +39,12 @@ class GRPOConfig(BaseTrainConfig):
 
 def _format_gsm8k_prompt(example: dict) -> dict:
     """Convert GSM8K example to GRPO-compatible format."""
-    answer = example["answer"].split("####")[-1].strip()
+    raw_answer = example["answer"]
+    if "####" in raw_answer:
+        answer = raw_answer.split("####")[-1].strip()
+    else:
+        # Fallback: use the last line as the answer when no #### separator
+        answer = raw_answer.strip().rsplit("\n", 1)[-1].strip()
     return {
         "prompt": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -48,7 +54,7 @@ def _format_gsm8k_prompt(example: dict) -> dict:
     }
 
 
-class GRPORunner:
+class GRPORunner(BaseRunner):
     """Runs GRPO training with verifiable math rewards."""
 
     def __init__(
@@ -56,31 +62,13 @@ class GRPORunner:
         config: GRPOConfig,
         reward_funcs: list[Callable] | None = None,
     ) -> None:
-        self.config = config
+        super().__init__(config)
         self.reward_funcs = reward_funcs or [math_verify_reward, format_reward]
-        self._model = None
-        self._tokenizer = None
-
-    def _load_model(self) -> None:
-        from unsloth import FastLanguageModel
-
-        self._model, self._tokenizer = FastLanguageModel.from_pretrained(
-            model_name=self.config.model_name,
-            max_seq_length=self.config.max_seq_length,
-            load_in_4bit=self.config.load_in_4bit,
-            dtype=None,
-        )
-        ensure_chat_template(self._tokenizer)
-        self._model = FastLanguageModel.get_peft_model(
-            self._model,
-            r=self.config.lora_r,
-            lora_alpha=self.config.lora_alpha,
-            lora_dropout=self.config.lora_dropout,
-            target_modules=self.config.lora_target_modules,
-            use_gradient_checkpointing="unsloth",
-        )
 
     def _load_dataset(self):
+        if self._dataset is not None:
+            return self._dataset
+
         from datasets import load_dataset
 
         ds = load_dataset(
@@ -90,7 +78,8 @@ class GRPORunner:
         )
         if self.config.dataset_size is not None:
             ds = ds.select(range(min(self.config.dataset_size, len(ds))))
-        return ds.map(_format_gsm8k_prompt, remove_columns=ds.column_names)
+        self._dataset = ds.map(_format_gsm8k_prompt, remove_columns=ds.column_names)
+        return self._dataset
 
     def train(self) -> TrainResult:
         from trl import GRPOConfig as TRLGRPOConfig
@@ -160,38 +149,3 @@ class GRPORunner:
             )
 
         return train_result
-
-    def save(self, path: Path) -> None:
-        if self._model:
-            self._model.save_pretrained(str(path))
-        if self._tokenizer:
-            self._tokenizer.save_pretrained(str(path))
-
-    def push_to_hub(self, repo_id: str, merge: bool = False, private: bool = False) -> str:
-        """Push the trained adapter (or merged model) to HuggingFace Hub."""
-        from alignrl.hub import merge_and_push, push_adapter
-
-        if merge:
-            return merge_and_push(
-                model_name=self.config.model_name,
-                adapter_path=str(self.config.output_dir / "final"),
-                repo_id=repo_id,
-                max_seq_length=self.config.max_seq_length,
-                load_in_4bit=self.config.load_in_4bit,
-                private=private,
-            )
-        return push_adapter(
-            output_dir=str(self.config.output_dir / "final"),
-            repo_id=repo_id,
-            private=private,
-        )
-
-    def load(self, path: Path) -> None:
-        from unsloth import FastLanguageModel
-
-        self._model, self._tokenizer = FastLanguageModel.from_pretrained(
-            model_name=str(path),
-            max_seq_length=self.config.max_seq_length,
-            load_in_4bit=self.config.load_in_4bit,
-        )
-        ensure_chat_template(self._tokenizer)

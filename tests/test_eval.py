@@ -150,18 +150,18 @@ class TestEvalRunner:
             model_name="qwen", stage="sft", benchmarks={"gsm8k": {"exact_match": 0.45}}
         )
 
-        with patch.object(runner, "evaluate", side_effect=[mock_result_base, mock_result_sft]):
+        with patch.object(EvalRunner, "evaluate", side_effect=[mock_result_base, mock_result_sft]):
             results = runner.evaluate_all_stages({"base": None, "sft": "./outputs/sft"})
             assert len(results) == 2
             assert results[0].stage == "base"
 
-    def test_evaluate_all_stages_restores_config(self) -> None:
+    def test_evaluate_all_stages_does_not_mutate_config(self) -> None:
         cfg = EvalConfig(adapter_path="original")
         runner = EvalRunner(cfg)
 
         mock_result = EvalResult(model_name="qwen", stage="base", benchmarks={})
 
-        with patch.object(runner, "evaluate", return_value=mock_result):
+        with patch.object(EvalRunner, "evaluate", return_value=mock_result):
             runner.evaluate_all_stages({"base": None, "sft": "./adapter"})
             assert cfg.adapter_path == "original"
 

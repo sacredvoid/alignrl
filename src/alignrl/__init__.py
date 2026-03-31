@@ -8,6 +8,7 @@ __version__ = "0.3.0"
 
 _LAZY_IMPORTS: dict[str, str] = {
     "BaseTrainConfig": "alignrl.config",
+    "BaseRunner": "alignrl.runner_base",
     "SFTConfig": "alignrl.sft",
     "SFTRunner": "alignrl.sft",
     "DPOConfig": "alignrl.dpo",

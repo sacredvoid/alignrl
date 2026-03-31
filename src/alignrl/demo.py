@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+
 from alignrl.inference import InferenceConfig, ModelServer, build_prompt
 
 MATH_SYSTEM = (
@@ -38,7 +40,9 @@ def create_demo(
         return servers[stage].generate(messages)
 
     def respond_all(message: str) -> list[str]:
-        return [respond(message, stage) for stage in stages]
+        with ThreadPoolExecutor(max_workers=len(stages)) as pool:
+            futures = [pool.submit(respond, message, stage) for stage in stages]
+            return [f.result() for f in futures]
 
     with gr.Blocks(title="alignrl - Post-Training Comparison") as app:
         gr.Markdown("# alignrl - Compare Post-Training Stages")

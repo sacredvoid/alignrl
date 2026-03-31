@@ -80,6 +80,8 @@ class ModelServer:
         self._model, self._tokenizer = load(model_path)
 
     def generate(self, messages: list[dict[str, str]]) -> str:
+        if self._model is None:
+            raise RuntimeError("Model not loaded. Call .load() before .generate().")
         if self.config.backend == "vllm":
             return self._generate_vllm(messages)
         elif self.config.backend == "mlx":

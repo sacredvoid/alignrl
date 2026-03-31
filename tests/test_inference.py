@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from alignrl.inference import InferenceConfig, ModelServer, build_prompt
 
 
@@ -73,6 +75,7 @@ class TestModelServer:
     def test_generate_dispatches_vllm(self) -> None:
         cfg = InferenceConfig(backend="vllm")
         server = ModelServer(cfg)
+        server._model = MagicMock()  # mark model as loaded
         server._generate_vllm = MagicMock(return_value="answer")
         messages = [{"role": "user", "content": "hi"}]
         result = server.generate(messages)
@@ -82,6 +85,7 @@ class TestModelServer:
     def test_generate_dispatches_mlx(self) -> None:
         cfg = InferenceConfig(backend="mlx")
         server = ModelServer(cfg)
+        server._model = MagicMock()  # mark model as loaded
         server._generate_mlx = MagicMock(return_value="mlx answer")
         messages = [{"role": "user", "content": "hi"}]
         result = server.generate(messages)
@@ -91,11 +95,18 @@ class TestModelServer:
     def test_generate_dispatches_unsloth(self) -> None:
         cfg = InferenceConfig(backend="unsloth")
         server = ModelServer(cfg)
+        server._model = MagicMock()  # mark model as loaded
         server._generate_unsloth = MagicMock(return_value="unsloth answer")
         messages = [{"role": "user", "content": "hi"}]
         result = server.generate(messages)
         server._generate_unsloth.assert_called_once_with(messages)
         assert result == "unsloth answer"
+
+    def test_generate_raises_if_not_loaded(self) -> None:
+        cfg = InferenceConfig(backend="unsloth")
+        server = ModelServer(cfg)
+        with pytest.raises(RuntimeError, match="Model not loaded"):
+            server.generate([{"role": "user", "content": "hi"}])
 
     def test_load_vllm_with_adapter(self) -> None:
         cfg = InferenceConfig(backend="vllm", adapter_path="./adapter")
