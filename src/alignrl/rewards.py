@@ -5,8 +5,15 @@ from __future__ import annotations
 import math
 import re
 
-_RE_ANSWER = re.compile(r"(?:the answer is|answer:)\s*([^\s.,]+)", re.IGNORECASE)
-_RE_EQUALS = re.compile(r"=\s*([^\s.,=]+)")
+# Match "the answer is X" / "final answer: X" / "answer: X" variants,
+# allowing commas inside numeric answers like "1,234" and an optional
+# currency/latex prefix like "$" or "\$".
+_RE_ANSWER = re.compile(
+    r"(?:final\s+answer|the\s+answer\s+is|answer)\s*[:=]?\s*"
+    r"\*?\*?(\\?\$?-?[\w,./\\{}%]+)",
+    re.IGNORECASE,
+)
+_RE_EQUALS = re.compile(r"=\s*([^\s,=]+)")
 
 
 def _extract_boxed_contents(text: str) -> list[str]:
@@ -34,30 +41,57 @@ def _extract_boxed_contents(text: str) -> list[str]:
     return results
 
 
+_RE_TEXT_WRAPPER = re.compile(r"\\text\{([^{}]*)\}")
+
+
+def _unwrap_latex(s: str) -> str:
+    """Strip common LaTeX wrappers like ``\\text{...}`` from a boxed answer."""
+    prev = None
+    current = s
+    while prev != current:
+        prev = current
+        current = _RE_TEXT_WRAPPER.sub(r"\1", current)
+    return current
+
+
 def extract_answer(text: str) -> str | None:
     """Extract the final answer from model output.
 
-    Supports: \\boxed{...}, 'the answer is X', 'X = Y' patterns.
+    Supports ``\\boxed{...}`` (with nested braces and ``\\text{}`` wrappers),
+    ``the answer is X`` / ``final answer: X``, and ``X = Y`` patterns.
     Returns the last match found (most likely the final answer).
     """
     boxed = _extract_boxed_contents(text)
     if boxed:
-        return boxed[-1].strip()
+        return _unwrap_latex(boxed[-1]).strip()
 
     answer_match = _RE_ANSWER.findall(text)
     if answer_match:
-        return answer_match[-1].strip()
+        return answer_match[-1].strip().rstrip(".,;:")
 
     eq_match = _RE_EQUALS.findall(text)
     if eq_match:
-        return eq_match[-1].strip()
+        return eq_match[-1].strip().rstrip(".,;:")
 
     return None
 
 
 def _normalize_numeric(s: str) -> str | None:
-    """Try to parse as a number for comparison."""
-    s = s.strip().rstrip(".")
+    """Try to parse as a number for comparison.
+
+    Handles common wrappers seen in LLM math outputs:
+    - commas as thousands separators (``1,234``)
+    - leading currency symbols (``$42``, ``\\$42``)
+    - trailing percent sign (``50%``)
+    - trailing period (``42.``)
+    """
+    s = s.strip()
+    # Strip common latex/currency/format wrappers
+    if s.startswith("\\$"):
+        s = s[2:]
+    s = s.lstrip("$").rstrip("%").rstrip(".")
+    # Remove thousands separators (commas between digits)
+    s = s.replace(",", "")
     try:
         val = float(s)
         if not math.isfinite(val):
@@ -70,11 +104,19 @@ def _normalize_numeric(s: str) -> str | None:
 
 
 def _answers_match(predicted: str, expected: str) -> bool:
-    """Check if two answers are equivalent."""
-    if predicted.strip() == expected.strip():
+    """Check if two answers are equivalent.
+
+    First tries exact string match (case-insensitive), then normalized
+    numeric match so that ``3.0`` == ``3`` and ``1,234`` == ``1234``.
+    """
+    pred = predicted.strip()
+    exp = expected.strip()
+    if pred == exp:
         return True
-    norm_pred = _normalize_numeric(predicted)
-    norm_exp = _normalize_numeric(expected)
+    if pred.casefold() == exp.casefold():
+        return True
+    norm_pred = _normalize_numeric(pred)
+    norm_exp = _normalize_numeric(exp)
     if norm_pred and norm_exp:
         return norm_pred == norm_exp
     return False

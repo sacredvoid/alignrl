@@ -8,6 +8,13 @@ import sys
 from pathlib import Path
 
 
+def cmd_version(args: argparse.Namespace) -> None:
+    """Print the installed alignrl version."""
+    from alignrl import __version__
+
+    print(f"alignrl {__version__}")
+
+
 def cmd_train(args: argparse.Namespace) -> None:
     """Run a training pipeline."""
     config_path = Path(args.config)
@@ -59,6 +66,10 @@ def cmd_eval(args: argparse.Namespace) -> None:
         config_kwargs["tasks"] = args.tasks.split(",")
     if args.preset:
         config_kwargs["preset"] = args.preset
+    if getattr(args, "num_fewshot", None) is not None:
+        config_kwargs["num_fewshot"] = args.num_fewshot
+    if getattr(args, "batch_size", None) is not None:
+        config_kwargs["batch_size"] = args.batch_size
 
     config = EvalConfig(**config_kwargs)
     runner = EvalRunner(config)
@@ -89,13 +100,31 @@ def cmd_serve(args: argparse.Namespace) -> None:
         name, _, path = spec.partition("=")
         stages[name] = path if path else None
 
-    demo = create_demo(stages=stages, model_name=args.model)
+    demo_kwargs: dict = {"stages": stages, "model_name": args.model}
+    if getattr(args, "temperature", None) is not None:
+        demo_kwargs["temperature"] = args.temperature
+    if getattr(args, "max_tokens", None) is not None:
+        demo_kwargs["max_tokens"] = args.max_tokens
+
+    demo = create_demo(**demo_kwargs)
     demo.launch(server_name="0.0.0.0", server_port=args.port, share=args.share)
 
 
 def main() -> None:
+    from alignrl import __version__
+
     parser = argparse.ArgumentParser(prog="alignrl", description="LLM Post-Training Playbook")
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"alignrl {__version__}",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
+
+    # Version (as a subcommand for scripting use)
+    version_p = sub.add_parser("version", help="Print the installed alignrl version")
+    version_p.set_defaults(func=cmd_version)
 
     # Train
     train_p = sub.add_parser("train", help="Run training pipeline")
@@ -118,6 +147,19 @@ def main() -> None:
         choices=["core", "reasoning", "leaderboard"],
         help="Benchmark preset (default: core)",
     )
+    eval_p.add_argument(
+        "--num-fewshot",
+        dest="num_fewshot",
+        type=int,
+        default=None,
+        help="Number of few-shot examples (default: 0)",
+    )
+    eval_p.add_argument(
+        "--batch-size",
+        dest="batch_size",
+        default=None,
+        help="Batch size for evaluation (e.g. 'auto', 8)",
+    )
     eval_p.add_argument("--limit", type=int, default=None)
     eval_p.add_argument("--output", default="./results")
     eval_p.add_argument("--wandb", action="store_true", help="Log results to W&B")
@@ -134,6 +176,19 @@ def main() -> None:
     )
     serve_p.add_argument("--port", type=int, default=7860)
     serve_p.add_argument("--share", action="store_true")
+    serve_p.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Sampling temperature for generation (default: 0.7)",
+    )
+    serve_p.add_argument(
+        "--max-tokens",
+        dest="max_tokens",
+        type=int,
+        default=None,
+        help="Maximum tokens to generate per response (default: 512)",
+    )
     serve_p.set_defaults(func=cmd_serve)
 
     args = parser.parse_args()
