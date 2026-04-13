@@ -64,6 +64,62 @@ class TestBaseTrainConfigValidation:
         cfg = BaseTrainConfig(lora_target_modules=["q_proj", "k_proj"])
         assert cfg.lora_target_modules == ["q_proj", "k_proj"]
 
+    def test_rejects_negative_learning_rate(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(learning_rate=-1e-4)
+
+    def test_rejects_zero_learning_rate(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(learning_rate=0.0)
+
+    def test_rejects_nonpositive_lora_r(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(lora_r=0)
+
+    def test_rejects_nonpositive_batch_size(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(per_device_train_batch_size=0)
+
+    def test_rejects_lora_dropout_gt_one(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(lora_dropout=1.5)
+
+    def test_rejects_unknown_field(self) -> None:
+        # Typos in YAML fields should fail fast, not silently default.
+        with pytest.raises(ValueError):
+            BaseTrainConfig(learnign_rate=1e-4)  # type: ignore[call-arg]
+
+    def test_max_steps_allows_minus_one(self) -> None:
+        cfg = BaseTrainConfig(max_steps=-1)
+        assert cfg.max_steps == -1
+
+    def test_rejects_max_steps_below_minus_one(self) -> None:
+        with pytest.raises(ValueError):
+            BaseTrainConfig(max_steps=-2)
+
+
+class TestBaseTrainConfigToYaml:
+    def test_to_yaml_roundtrips(self, tmp_path: Path) -> None:
+        cfg = BaseTrainConfig(model_name="round-trip-model", learning_rate=1e-5, lora_r=8)
+        text = cfg.to_yaml()
+        assert "round-trip-model" in text
+        assert "learning_rate" in text
+
+        out_path = tmp_path / "written.yaml"
+        cfg.to_yaml(out_path)
+        assert out_path.exists()
+
+        restored = BaseTrainConfig.from_yaml(out_path)
+        assert restored.model_name == "round-trip-model"
+        assert restored.learning_rate == 1e-5
+        assert restored.lora_r == 8
+
+    def test_to_yaml_creates_parent_dirs(self, tmp_path: Path) -> None:
+        cfg = BaseTrainConfig()
+        out_path = tmp_path / "nested" / "dir" / "config.yaml"
+        cfg.to_yaml(out_path)
+        assert out_path.exists()
+
 
 class TestEnsureChatTemplate:
     def test_sets_template_when_missing(self) -> None:

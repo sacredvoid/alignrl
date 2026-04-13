@@ -13,12 +13,16 @@ MATH_SYSTEM = (
 def create_demo(
     stages: dict[str, str | None],
     model_name: str = "Qwen/Qwen2.5-3B",
+    temperature: float = 0.7,
+    max_tokens: int = 512,
 ):
     """Create a Gradio demo comparing model outputs across training stages.
 
     Args:
         stages: {stage_name: adapter_path_or_None}
         model_name: base model name
+        temperature: sampling temperature passed to each backend
+        max_tokens: maximum number of tokens to generate per response
     """
     import gradio as gr
 
@@ -28,6 +32,8 @@ def create_demo(
             model_name=model_name,
             adapter_path=adapter_path,
             backend="unsloth",
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         server = ModelServer(config)
         server.load()

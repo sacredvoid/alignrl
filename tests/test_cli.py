@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from alignrl.cli import cmd_eval, cmd_serve, cmd_train, main
+from alignrl.cli import cmd_eval, cmd_serve, cmd_train, cmd_version, main
 
 
 class TestCLIParser:
@@ -114,6 +114,8 @@ class TestCmdEval:
             stage="base",
             output=str(tmp_path / "results"),
             wandb=False,
+            num_fewshot=None,
+            batch_size=None,
         )
 
         with (
@@ -123,6 +125,35 @@ class TestCmdEval:
             cmd_eval(args)
             mock_runner.evaluate.assert_called_once_with(stage="base")
             assert (tmp_path / "results" / "eval_base.json").exists()
+
+    def test_eval_forwards_num_fewshot_and_batch_size(self, tmp_path) -> None:
+        mock_result = MagicMock()
+        mock_result.to_dict.return_value = {"benchmarks": {}}
+        mock_result.benchmarks = {}
+        mock_runner = MagicMock()
+        mock_runner.evaluate.return_value = mock_result
+
+        args = argparse.Namespace(
+            model="test-model",
+            adapter=None,
+            tasks=None,
+            preset=None,
+            limit=None,
+            stage="sft",
+            output=str(tmp_path / "results"),
+            wandb=False,
+            num_fewshot=5,
+            batch_size="8",
+        )
+
+        with (
+            patch("alignrl.eval.EvalRunner", return_value=mock_runner),
+            patch("alignrl.eval.EvalConfig") as mock_cfg_cls,
+        ):
+            cmd_eval(args)
+            call_kwargs = mock_cfg_cls.call_args.kwargs
+            assert call_kwargs["num_fewshot"] == 5
+            assert call_kwargs["batch_size"] == "8"
 
 
 class TestMainEntry:
@@ -148,6 +179,8 @@ class TestCmdServe:
             stages=["base", "sft=./outputs/sft/final"],
             port=7860,
             share=False,
+            temperature=None,
+            max_tokens=None,
         )
 
         with patch("alignrl.demo.create_demo", return_value=mock_demo) as mock_create:
@@ -157,3 +190,49 @@ class TestCmdServe:
             assert stages["base"] is None
             assert stages["sft"] == "./outputs/sft/final"
             mock_demo.launch.assert_called_once()
+
+    def test_serve_forwards_generation_params(self) -> None:
+        mock_demo = MagicMock()
+
+        args = argparse.Namespace(
+            model="test-model",
+            stages=["base"],
+            port=7860,
+            share=False,
+            temperature=0.2,
+            max_tokens=256,
+        )
+
+        with patch("alignrl.demo.create_demo", return_value=mock_demo) as mock_create:
+            cmd_serve(args)
+            kwargs = mock_create.call_args.kwargs
+            assert kwargs["temperature"] == 0.2
+            assert kwargs["max_tokens"] == 256
+
+
+class TestCmdVersion:
+    def test_version_subcommand_prints_version(self, capsys: pytest.CaptureFixture) -> None:
+        from alignrl import __version__
+
+        cmd_version(argparse.Namespace())
+        captured = capsys.readouterr()
+        assert __version__ in captured.out
+        assert "alignrl" in captured.out
+
+    def test_version_via_main(self, capsys: pytest.CaptureFixture) -> None:
+        from alignrl import __version__
+
+        sys.argv = ["alignrl", "version"]
+        main()
+        captured = capsys.readouterr()
+        assert __version__ in captured.out
+
+    def test_version_flag(self, capsys: pytest.CaptureFixture) -> None:
+        from alignrl import __version__
+
+        sys.argv = ["alignrl", "--version"]
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 0
+        captured = capsys.readouterr()
+        assert __version__ in captured.out

@@ -28,6 +28,20 @@ class TestExtractAnswer:
     def test_multiple_boxed_takes_last(self) -> None:
         assert extract_answer(r"\boxed{1} and \boxed{2}") == "2"
 
+    def test_final_answer_prefix(self) -> None:
+        assert extract_answer("So the final answer: 7") == "7"
+
+    def test_answer_with_commas(self) -> None:
+        # Thousands-separated numeric answers now survive extraction.
+        assert extract_answer("The answer is 1,234") == "1,234"
+
+    def test_trailing_punctuation_stripped(self) -> None:
+        assert extract_answer("The answer is 42.") == "42"
+        assert extract_answer("The answer is 42;") == "42"
+
+    def test_unwraps_text_wrapper_in_boxed(self) -> None:
+        assert extract_answer(r"\boxed{\text{42}}") == "42"
+
 
 class TestMathVerifyReward:
     def test_correct_integer(self) -> None:
@@ -122,6 +136,20 @@ class TestNormalizeNumeric:
     def test_nan_returns_none(self) -> None:
         assert _normalize_numeric("nan") is None
 
+    def test_thousands_separator(self) -> None:
+        assert _normalize_numeric("1,234") == "1234"
+        assert _normalize_numeric("1,234,567") == "1234567"
+
+    def test_currency_prefix(self) -> None:
+        assert _normalize_numeric("$42") == "42"
+        assert _normalize_numeric("\\$42") == "42"
+
+    def test_percent_suffix(self) -> None:
+        assert _normalize_numeric("50%") == "50"
+
+    def test_negative_number(self) -> None:
+        assert _normalize_numeric("-5") == "-5"
+
 
 class TestAnswersMatch:
     def test_exact_match(self) -> None:
@@ -135,6 +163,15 @@ class TestAnswersMatch:
 
     def test_non_matching_numbers(self) -> None:
         assert _answers_match("3", "4") is False
+
+    def test_case_insensitive_string(self) -> None:
+        assert _answers_match("True", "true") is True
+
+    def test_comma_separated_matches_plain(self) -> None:
+        assert _answers_match("1,234", "1234") is True
+
+    def test_currency_matches_plain(self) -> None:
+        assert _answers_match("$42", "42") is True
 
 
 class TestMathVerifyRewardEdgeCases:
